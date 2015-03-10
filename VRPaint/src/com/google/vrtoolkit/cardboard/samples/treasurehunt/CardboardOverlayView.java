@@ -22,6 +22,9 @@ import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.InputDevice;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
@@ -176,5 +179,42 @@ public class CardboardOverlayView extends LinearLayout {
         (int) leftMargin, (int) topMargin,
         (int) (leftMargin + width), (int) (topMargin + height * (1.0f - verticalTextPos)));
     }
+  }
+  @Override
+  public boolean onGenericMotionEvent(MotionEvent me) {
+	return false;
+  }
+  @Override
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
+	  boolean handled = false;
+      if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+          if (event.getRepeatCount() == 0) {
+              switch (keyCode) {
+                  // Handle gamepad and D-pad button presses to
+                  // navigate the ship
+
+                  default:
+                       if (isFireKey(keyCode)) {
+                           // Update the ship object to fire lasers
+                           handled = true;
+                       }
+                   break;
+              }
+          }
+          if (handled) {
+              return true;
+          }
+      }
+      return super.onKeyDown(keyCode, event);
+  }
+  @Override
+  public boolean onKeyUp(int keyCode, KeyEvent event) {
+	return false;
+  }
+  public static boolean isFireKey(int keyCode) {
+      // Here we treat Button_A and DPAD_CENTER as the primary action
+      // keys for the game.
+      return keyCode == KeyEvent.KEYCODE_DPAD_CENTER
+              || keyCode == KeyEvent.KEYCODE_BUTTON_A;
   }
 }

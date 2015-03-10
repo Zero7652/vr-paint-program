@@ -16,19 +16,6 @@
 
 package com.google.vrtoolkit.cardboard.samples.treasurehunt;
 
-import com.google.vrtoolkit.cardboard.CardboardActivity;
-import com.google.vrtoolkit.cardboard.CardboardView;
-import com.google.vrtoolkit.cardboard.Eye;
-import com.google.vrtoolkit.cardboard.HeadTransform;
-import com.google.vrtoolkit.cardboard.Viewport;
-
-import android.content.Context;
-import android.opengl.GLES20;
-import android.opengl.Matrix;
-import android.os.Bundle;
-import android.os.Vibrator;
-import android.util.Log;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +25,22 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
+
+import android.content.Context;
+import android.opengl.GLES20;
+import android.opengl.Matrix;
+import android.os.Bundle;
+import android.os.Vibrator;
+import android.util.Log;
+import android.view.InputDevice;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+
+import com.google.vrtoolkit.cardboard.CardboardActivity;
+import com.google.vrtoolkit.cardboard.CardboardView;
+import com.google.vrtoolkit.cardboard.Eye;
+import com.google.vrtoolkit.cardboard.HeadTransform;
+import com.google.vrtoolkit.cardboard.Viewport;
 
 /**
  * A Cardboard sample application.
@@ -59,6 +62,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
   // We keep the light always position just above the user.
   private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 2.0f, 0.0f, 1.0f };
+  
+  private float[] Eyes = new float[]{0f,0f};
 
   private final float[] lightPosInEyeSpace = new float[4];
 
@@ -211,8 +216,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     cubeColors.put(WorldLayoutData.CUBE_COLORS);
     cubeColors.position(0);
 
-    ByteBuffer bbFoundColors = ByteBuffer.allocateDirect(
-        WorldLayoutData.CUBE_FOUND_COLORS.length * 4);
+    ByteBuffer bbFoundColors = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_FOUND_COLORS.length * 4);
     bbFoundColors.order(ByteOrder.nativeOrder());
     cubeFoundColors = bbFoundColors.asFloatBuffer();
     cubeFoundColors.put(WorldLayoutData.CUBE_FOUND_COLORS);
@@ -339,7 +343,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     Matrix.rotateM(modelCube, 0, TIME_DELTA, 0.5f, 0.5f, 1.0f);
 
     // Build the camera matrix and apply it to the ModelView.
-    Matrix.setLookAtM(camera, 0, 0.0f, 0.0f, CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    Matrix.setLookAtM(camera, 0, Eyes[0], Eyes[1], CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
     headTransform.getHeadView(headView, 0);
 
@@ -372,8 +376,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     // Set modelView for the floor, so we draw floor in the correct location
     Matrix.multiplyMM(modelView, 0, view, 0, modelFloor, 0);
-    Matrix.multiplyMM(modelViewProjection, 0, perspective, 0,
-      modelView, 0);
+    Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
     drawFloor();
   }
 
@@ -398,16 +401,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     GLES20.glUniformMatrix4fv(cubeModelViewParam, 1, false, modelView, 0);
 
     // Set the position of the cube
-    GLES20.glVertexAttribPointer(cubePositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT,
-        false, 0, cubeVertices);
+    GLES20.glVertexAttribPointer(cubePositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, cubeVertices);
 
     // Set the ModelViewProjection matrix in the shader.
     GLES20.glUniformMatrix4fv(cubeModelViewProjectionParam, 1, false, modelViewProjection, 0);
 
     // Set the normal positions of the cube, again for shading
     GLES20.glVertexAttribPointer(cubeNormalParam, 3, GLES20.GL_FLOAT, false, 0, cubeNormals);
-    GLES20.glVertexAttribPointer(cubeColorParam, 4, GLES20.GL_FLOAT, false, 0,
-        isLookingAtObject() ? cubeFoundColors : cubeColors);
+    GLES20.glVertexAttribPointer(cubeColorParam, 4, GLES20.GL_FLOAT, false, 0, isLookingAtObject() ? cubeFoundColors : cubeColors);
 
     GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
     checkGLError("Drawing cube");
@@ -427,12 +428,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     GLES20.glUniform3fv(floorLightPosParam, 1, lightPosInEyeSpace, 0);
     GLES20.glUniformMatrix4fv(floorModelParam, 1, false, modelFloor, 0);
     GLES20.glUniformMatrix4fv(floorModelViewParam, 1, false, modelView, 0);
-    GLES20.glUniformMatrix4fv(floorModelViewProjectionParam, 1, false,
-        modelViewProjection, 0);
-    GLES20.glVertexAttribPointer(floorPositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT,
-        false, 0, floorVertices);
-    GLES20.glVertexAttribPointer(floorNormalParam, 3, GLES20.GL_FLOAT, false, 0,
-        floorNormals);
+    GLES20.glUniformMatrix4fv(floorModelViewProjectionParam, 1, false, modelViewProjection, 0);
+    GLES20.glVertexAttribPointer(floorPositionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, floorVertices);
+    GLES20.glVertexAttribPointer(floorNormalParam, 3, GLES20.GL_FLOAT, false, 0, floorNormals);
     GLES20.glVertexAttribPointer(floorColorParam, 4, GLES20.GL_FLOAT, false, 0, floorColors);
 
     GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
@@ -446,8 +444,11 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
   @Override
   public void onCardboardTrigger() {
     Log.i(TAG, "onCardboardTrigger");
+    processTrigger();
+  }
 
-    if (isLookingAtObject()) {
+  private void processTrigger() {
+	if (isLookingAtObject()) {
       score++;
       overlayView.show3DToast("Found it! Look around for another one.\nScore = " + score);
       hideObject();
@@ -475,8 +476,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     float oldObjectDistance = objectDistance;
     objectDistance = (float) Math.random() * 15 + 5;
     float objectScalingFactor = objectDistance / oldObjectDistance;
-    Matrix.scaleM(rotationMatrix, 0, objectScalingFactor, objectScalingFactor,
-        objectScalingFactor);
+    Matrix.scaleM(rotationMatrix, 0, objectScalingFactor, objectScalingFactor, objectScalingFactor);
     Matrix.multiplyMV(posVec, 0, rotationMatrix, 0, modelCube, 12);
 
     // Now get the up or down angle, between -20 and 20 degrees.
@@ -505,5 +505,107 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     float yaw = (float) Math.atan2(objPositionVec[0], -objPositionVec[2]);
 
     return Math.abs(pitch) < PITCH_LIMIT && Math.abs(yaw) < YAW_LIMIT;
+  }
+  
+  @Override
+  public boolean dispatchGenericMotionEvent(MotionEvent event) {
+	// Check that the event came from a game controller
+      if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.getAction() == MotionEvent.ACTION_MOVE) {
+
+          // Process all historical movement samples in the batch
+          final int historySize = event.getHistorySize();
+
+          // Process the movements starting from the
+          // earliest historical position in the batch
+          for (int i = 0; i < historySize; i++) {
+              // Process the event at historical position i
+              processJoystickInput(event, i);
+          }
+
+          // Process the current movement sample in the batch (position -1)
+          processJoystickInput(event, -1);
+          return true;
+      }
+      return super.onGenericMotionEvent(event);
+  }
+  
+  private void processJoystickInput(MotionEvent event, int historyPos) {
+	    InputDevice mInputDevice = event.getDevice();
+
+	    // Calculate the horizontal distance to move by
+	    // using the input value from one of these physical controls:
+	    // the left control stick, hat axis, or the right control stick.
+	    float x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_X, historyPos);
+	    if (x == 0) {
+	        x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
+	    }
+	    if (x == 0) {
+	        x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
+	    }
+
+	    // Calculate the vertical distance to move by
+	    // using the input value from one of these physical controls:
+	    // the left control stick, hat switch, or the right control stick.
+	    float y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
+	    if (y == 0) {
+	        y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
+	    }
+	    if (y == 0) {
+	        y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
+	    }
+
+	    // Update the ship object based on the new x and y values
+	    Eyes[0] += x;
+	    Eyes[1] += y;
+	}
+  
+  private static float getCenteredAxis(MotionEvent event, InputDevice device, int axis, int historyPos) {
+	    final InputDevice.MotionRange range = device.getMotionRange(axis, event.getSource());
+
+	    // A joystick at rest does not always report an absolute position of
+	    // (0,0). Use the getFlat() method to determine the range of values
+	    // bounding the joystick axis center.
+	    if (range != null) {
+	        final float flat = range.getFlat();
+	        final float value =
+	                historyPos < 0 ? event.getAxisValue(axis):
+	                event.getHistoricalAxisValue(axis, historyPos);
+
+	        // Ignore axis values that are within the 'flat' region of the
+	        // joystick axis center.
+	        if (Math.abs(value) > flat) {
+	            return value;
+	        }
+	    }
+	    return 0;
+	}
+  
+  @Override
+  public boolean dispatchKeyEvent(KeyEvent event) {
+	  boolean handled = false;
+      if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+          if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN) {
+        	  int keyCode = event.getKeyCode();
+              switch (keyCode) {
+                  // Handle gamepad and D-pad button presses to
+                  // navigate the ship
+
+                  default:
+                       if (CardboardOverlayView.isFireKey(keyCode)) {
+                           // Update the ship object to fire lasers
+
+                    	    Log.i(TAG, "on SOURCE_GAMEPAD");
+
+                    	    processTrigger();
+                           handled = true;
+                       }
+                   break;
+              }
+          }
+          if (handled) {
+              return true;
+          }
+      }
+      return super.dispatchKeyEvent(event);
   }
 }
