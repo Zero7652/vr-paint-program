@@ -91,9 +91,7 @@ public class OpenGlStuff {
 	/**
 	 * Converts a raw text file into a string.
 	 *
-	 * @param resId
-	 *            The resource ID of the raw text file about to be turned into a
-	 *            shader.
+	 * @param resId The resource ID of the raw text file about to be turned into a shader.
 	 * @return The context of the text file, or null in case of error.
 	 */
 	private String readRawTextFile(int resId) {
@@ -125,14 +123,16 @@ public class OpenGlStuff {
 	 */
 	public void onSurfaceCreated(EGLConfig config) {
 		Log.i(TAG, "onSurfaceCreated");
-		GLES20.glClearColor(0.8f, 0.8f, 0.8f, 0.5f); // Dark background so text
-														// shows up well.
+		GLES20.glClearColor(0.8f, 0.8f, 0.8f, 0.5f); // Dark background so text shows up well.
 
 		int vertexShader = loadGLShader(GLES20.GL_VERTEX_SHADER, R.raw.light_vertex);
 		int gridShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.grid_fragment);
 		int passthroughShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.passthrough_fragment);
 
+		cube.cubeStuff();
 		cube.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
+
+		floor.floorStuff();
 		floor.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
 		GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
@@ -140,11 +140,9 @@ public class OpenGlStuff {
 	}
 
 	/**
-	 * Checks if we've had an error inside of OpenGL ES, and if so what that
-	 * error is.
+	 * Checks if we've had an error inside of OpenGL ES, and if so what that error is.
 	 *
-	 * @param label
-	 *            Label to report in case of error.
+	 * @param label  Label to report in case of error.
 	 */
 	private static void checkGLError(String label) {
 		int error;
@@ -157,8 +155,7 @@ public class OpenGlStuff {
 	/**
 	 * Prepares OpenGL ES before we draw a frame.
 	 *
-	 * @param headTransform
-	 *            The head transformation in the new frame.
+	 * @param headTransform The head transformation in the new frame.
 	 */
 	public void onNewFrame(HeadTransform headTransform) {
 		// Build the Model part of the ModelView matrix.
@@ -166,10 +163,8 @@ public class OpenGlStuff {
 
 		// Build the camera matrix and apply it to the ModelView.
 		Matrix.setLookAtM(camera, 0, Eyes[0], Eyes[1], CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-		// Matrix.setLookAtM(camera, 0, Eyes[0], Eyes[1], CAMERA_Z, 0.0f, 0.0f,
-		// 0.0f, 0.0f, 1.0f, 0.0f);
-		// Matrix.setLookAtM(camera, 0, 0.0f, Eyes[0], Eyes[1], 0.0f, 0.0f,
-		// 0.0f, 0.0f, 1.0f, 0.0f);
+		// Matrix.setLookAtM(camera, 0, Eyes[0], Eyes[1], CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+		// Matrix.setLookAtM(camera, 0, 0.0f, Eyes[0], Eyes[1], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
 		headTransform.getHeadView(headView, 0);
 
@@ -339,7 +334,6 @@ public class OpenGlStuff {
 		 *            The EGL configuration used when creating the surface.
 		 */
 		public void onSurfaceCreated(int vertexShader, int gridShader, int passthroughShader) {
-			floor.floorStuff();
 			program = GLES20.glCreateProgram();
 			GLES20.glAttachShader(program, vertexShader);
 			GLES20.glAttachShader(program, gridShader);
