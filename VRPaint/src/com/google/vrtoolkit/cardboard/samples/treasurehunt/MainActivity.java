@@ -31,6 +31,7 @@ import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
+import com.google.vrtoolkit.cardboard.samples.treasurehunt.OpenGlStuff.GLSelectableObject;
 
 /**
  * A Cardboard sample application.
@@ -122,10 +123,11 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
   }
 
   private void processTrigger() {
-	if (openGlStuff.isLookingAtObject()) {
+	  GLSelectableObject cube;
+	if ((cube = openGlStuff.isLookingAtObject()) != null) {
       score++;
       overlayView.show3DToast("Found it! Look around for another one.\nScore = " + score);
-      openGlStuff.hideObject();
+      openGlStuff.hideObject(cube);
     } else {
       overlayView.show3DToast("Look around to find the object!");
     }

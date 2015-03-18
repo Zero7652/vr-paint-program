@@ -7,15 +7,17 @@ import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
-
-import com.google.vrtoolkit.cardboard.Eye;
-import com.google.vrtoolkit.cardboard.HeadTransform;
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
+
+import com.google.vrtoolkit.cardboard.Eye;
+import com.google.vrtoolkit.cardboard.HeadTransform;
 
 public class OpenGlStuff {
 
@@ -40,7 +42,8 @@ public class OpenGlStuff {
 	private final float[] lightPosInEyeSpace = new float[4];
 
 	private GLObject floor = new GLObject();
-	private GLSelectableObject cube = new GLSelectableObject(12f);
+//	private GLSelectableObject cube = new GLSelectableObject(0f, 12f);
+	private List<GLSelectableObject> cubes = new ArrayList<GLSelectableObject>();
 
 	private float[] camera = new float[16];
 	private float[] view = new float[16];
@@ -52,6 +55,8 @@ public class OpenGlStuff {
 
 	public OpenGlStuff(MainActivity main) {
 		this.main = main;
+		cubes.add(new GLSelectableObject(0f, 12f));
+		cubes.add(new GLSelectableObject(0f, 15f));
 	}
 
 	/**
@@ -128,9 +133,11 @@ public class OpenGlStuff {
 		int vertexShader = loadGLShader(GLES20.GL_VERTEX_SHADER, R.raw.light_vertex);
 		int gridShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.grid_fragment);
 		int passthroughShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.passthrough_fragment);
-
-		cube.cubeStuff();
-		cube.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
+		
+		for(GLSelectableObject cube : cubes){
+			cube.cubeStuff();
+			cube.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
+		}
 
 		floor.floorStuff();
 		floor.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
@@ -158,8 +165,10 @@ public class OpenGlStuff {
 	 * @param headTransform The head transformation in the new frame.
 	 */
 	public void onNewFrame(HeadTransform headTransform) {
-		// Build the Model part of the ModelView matrix.
-		Matrix.rotateM(cube.getModel(), 0, TIME_DELTA, 0.5f, 0.5f, 1.0f);
+		for(GLSelectableObject cube : cubes){
+			// Build the Model part of the ModelView matrix.
+			Matrix.rotateM(cube.getModel(), 0, TIME_DELTA, 0.5f, 0.5f, 1.0f);
+		}
 
 		// Build the camera matrix and apply it to the ModelView.
 		Matrix.setLookAtM(camera, 0, Eyes[0], Eyes[1], CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
@@ -188,12 +197,14 @@ public class OpenGlStuff {
 		// Set the position of the light
 		Matrix.multiplyMV(lightPosInEyeSpace, 0, view, 0, LIGHT_POS_IN_WORLD_SPACE, 0);
 
-		// Build the ModelView and ModelViewProjection matrices
-		// for calculating cube position and light.
 		float[] perspective = eye.getPerspective(Z_NEAR, Z_FAR);
-		Matrix.multiplyMM(modelView, 0, view, 0, cube.getModel(), 0);
-		Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-		cube.drawCube();
+		for(GLSelectableObject cube : cubes){
+			// Build the ModelView and ModelViewProjection matrices
+			// for calculating cube position and light.
+			Matrix.multiplyMM(modelView, 0, view, 0, cube.getModel(), 0);
+			Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+			cube.drawCube();
+		}
 
 		// Set modelView for the floor, so we draw floor in the correct location
 		Matrix.multiplyMM(modelView, 0, view, 0, floor.getModel(), 0);
@@ -208,7 +219,7 @@ public class OpenGlStuff {
 	 * We'll rotate it around the Y-axis so it's out of sight, and then up or
 	 * down by a little bit.
 	 */
-	public void hideObject() {
+	public void hideObject(GLSelectableObject cube) {
 		float[] rotationMatrix = new float[16];
 		float[] posVec = new float[4];
 
@@ -239,7 +250,22 @@ public class OpenGlStuff {
 	 *
 	 * @return true if the user is looking at the object.
 	 */
-	public boolean isLookingAtObject() {
+	public GLSelectableObject isLookingAtObject() {
+		for(GLSelectableObject cube : cubes){
+			if(isLookingAtObject(cube)){
+				return cube;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Check if user is looking at object by calculating where the object is in
+	 * eye-space.
+	 *
+	 * @return true if the user is looking at the object.
+	 */
+	public boolean isLookingAtObject(GLSelectableObject cube) {
 		float[] initVec = { 0, 0, 0, 1.0f };
 		float[] objPositionVec = new float[4];
 
@@ -270,11 +296,12 @@ public class OpenGlStuff {
 		protected int lightPosParam;
 
 		protected float[] model = new float[16];
-		protected float distance = 20f;
+		protected float yPos = 20f;
+		protected float distance = 0f;
 		
 		public GLObject(){}
 		public GLObject(float distance){
-			this.distance = distance;
+			this.yPos = distance;
 		}
 		
 		public void floorStuff() {
@@ -357,7 +384,7 @@ public class OpenGlStuff {
 
 			checkGLError("Floor program params");
 			Matrix.setIdentityM(model, 0);
-			Matrix.translateM(model, 0, 0, -distance, 0); // Floor appears
+			Matrix.translateM(model, 0, 0, -yPos, -distance); // Floor appears
 			// below user.
 			
 		}
@@ -382,12 +409,12 @@ public class OpenGlStuff {
 		private FloatBuffer cubeFoundColors;
 		
 		public GLSelectableObject(){}
-		public GLSelectableObject(float distance){
+		public GLSelectableObject(float y, float distance){
+			this.yPos = y;
 			this.distance = distance;
 		}
 
 		public void cubeStuff() {
-
 			ByteBuffer bbVertices = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_COORDS.length * 4);
 			bbVertices.order(ByteOrder.nativeOrder());
 			vertices = bbVertices.asFloatBuffer();
@@ -439,7 +466,7 @@ public class OpenGlStuff {
 
 			// Set the normal positions of the cube, again for shading
 			GLES20.glVertexAttribPointer(normalParam, 3, GLES20.GL_FLOAT, false, 0, normals);
-			GLES20.glVertexAttribPointer(colorParam, 4, GLES20.GL_FLOAT, false, 0, isLookingAtObject() ? cubeFoundColors : colors);
+			GLES20.glVertexAttribPointer(colorParam, 4, GLES20.GL_FLOAT, false, 0, isLookingAtObject(this) ? cubeFoundColors : colors);
 
 			GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
 			checkGLError("Drawing cube");
