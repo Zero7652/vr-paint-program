@@ -47,7 +47,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
   private Vibrator vibrator;
   private CardboardOverlayView overlayView;
   private OpenGlStuff openGlStuff;
-    private Activity act;
     private Socket s;
     private BufferedReader in;
 
