@@ -60,7 +60,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     super.onCreate(savedInstanceState);
     openGlStuff = new OpenGlStuff(this);
 
-    setContentView(R.layout.common_ui);
+    setContentView(R.layout.common_ui); 
     CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
     cardboardView.setRenderer(this);
     setCardboardView(cardboardView);
