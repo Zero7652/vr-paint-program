@@ -139,7 +139,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             @Override
             public void run() {
                 try {
-                    s=new Socket("172.18.83.64",5009); //123
+                    s=new Socket("172.18.83.64",5009);
                     in = new BufferedReader(new InputStreamReader(s.getInputStream()));
                     //overlayView.show3DToast("runningzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
                     Log.i(OpenGlStuff.TAG, "runningzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
