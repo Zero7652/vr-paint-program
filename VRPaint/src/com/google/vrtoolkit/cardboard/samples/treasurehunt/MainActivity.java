@@ -18,8 +18,10 @@ package com.google.vrtoolkit.cardboard.samples.treasurehunt;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.InputDevice;
@@ -32,6 +34,8 @@ import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
 import com.google.vrtoolkit.cardboard.samples.treasurehunt.OpenGlStuff.GLSelectableObject;
+import java.net.*;
+import java.io.*;
 
 /**
  * A Cardboard sample application.
@@ -43,6 +47,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
   private Vibrator vibrator;
   private CardboardOverlayView overlayView;
   private OpenGlStuff openGlStuff;
+    private Activity act;
+    private Socket s;
+    private BufferedReader in;
 
   /**
    * Sets the view to our CardboardView and initializes the transformation matrices we will use
@@ -60,9 +67,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
+      StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 
-    overlayView = (CardboardOverlayView) findViewById(R.id.overlay);
+      StrictMode.setThreadPolicy(policy);
+
+
+      overlayView = (CardboardOverlayView) findViewById(R.id.overlay);
     overlayView.show3DToast("Pull the magnet when you find an object.");
+      runThread(this);
   }
 
   @Override
@@ -121,6 +133,54 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     Log.i(OpenGlStuff.TAG, "onCardboardTrigger");
     processTrigger();
   }
+
+    public void runThread(Activity newAct)
+    {
+        Thread tr = new Thread(new Runnable(){
+            @Override
+            public void run() {
+                try {
+                    s=new Socket("172.18.7.68",5009);
+                    in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                    //overlayView.show3DToast("runningzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
+                    Log.i(OpenGlStuff.TAG, "runningzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
+                    while(true)
+                    {
+                        //overlayView.show3DToast("running");
+                        Log.i(OpenGlStuff.TAG, "running");
+                        System.out.println("testing");
+                        String line;
+                        while((line=in.readLine())!=null)
+                        {
+
+                            System.out.println("testingzzzzzzzzz");
+                            if(line.equals("x")) {
+                                //overlayView.show3DToast("x");
+                                Log.i(OpenGlStuff.TAG, "x");
+                                Log.i(OpenGlStuff.TAG, "Before call");
+                                runThread2(MainActivity.this);
+                                Log.i(OpenGlStuff.TAG, "Before call");
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+        });
+        tr.start();
+    }
+
+    private void runThread2(Activity act){
+        Log.i(OpenGlStuff.TAG, "Before call");
+        act.runOnUiThread(new Runnable(){
+            @Override
+            public void run() {
+                onCardboardTrigger();
+            }
+        });
+        Log.i(OpenGlStuff.TAG, "After all");
+    }
 
   private void processTrigger() {
 	  GLSelectableObject cube;
