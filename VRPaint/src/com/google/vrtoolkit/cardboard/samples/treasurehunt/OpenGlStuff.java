@@ -41,8 +41,7 @@ public class OpenGlStuff {
 
 	private final float[] lightPosInEyeSpace = new float[4];
 
-	private GLObject floor = new GLObject();
-//	private GLSelectableObject cube = new GLSelectableObject(0f, 12f);
+	private GLObject floor = new GLObject(0f,20f,0f);
 	private List<GLSelectableObject> cubes = new ArrayList<GLSelectableObject>();
 
 	private float[] camera = new float[16];
@@ -55,8 +54,9 @@ public class OpenGlStuff {
 
 	public OpenGlStuff(MainActivity main) {
 		this.main = main;
-		cubes.add(new GLSelectableObject(0f, 12f));
-		cubes.add(new GLSelectableObject(0f, 15f));
+		cubes.add(new GLSelectableObject(0f, 0f, 12f));
+		cubes.add(new GLSelectableObject(0f, 0f, 12f));
+		hideObject(cubes.get(1));
 	}
 
 	/**
@@ -165,10 +165,17 @@ public class OpenGlStuff {
 	 * @param headTransform The head transformation in the new frame.
 	 */
 	public void onNewFrame(HeadTransform headTransform) {
+		{
+			float[] fVector = new float[3];
+			headTransform.getForwardVector(fVector, 0);
+			Matrix.setIdentityM(cubes.get(0).getModel(), 0);
+			Matrix.translateM(cubes.get(0).getModel(), 0, -fVector[0]*20, -fVector[1]*20, fVector[2]*20);
+		}
 		for(GLSelectableObject cube : cubes){
 			// Build the Model part of the ModelView matrix.
 			Matrix.rotateM(cube.getModel(), 0, TIME_DELTA, 0.5f, 0.5f, 1.0f);
 		}
+		
 
 		// Build the camera matrix and apply it to the ModelView.
 		Matrix.setLookAtM(camera, 0, Eyes[0], Eyes[1], CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
@@ -296,12 +303,15 @@ public class OpenGlStuff {
 		protected int lightPosParam;
 
 		protected float[] model = new float[16];
-		protected float yPos = 20f;
-		protected float distance = 0f;
+		protected float xPos = 0f;
+		protected float yPos = 0f;
+		protected float zPos = 0f;
 		
-		public GLObject(){}
-		public GLObject(float distance){
-			this.yPos = distance;
+//		public GLObject(){}
+		public GLObject(float xPos, float yPos, float zPos){
+			this.xPos = xPos;
+			this.yPos = yPos;
+			this.zPos = zPos;
 		}
 		
 		public void floorStuff() {
@@ -363,7 +373,11 @@ public class OpenGlStuff {
 		public void onSurfaceCreated(int vertexShader, int gridShader, int passthroughShader) {
 			program = GLES20.glCreateProgram();
 			GLES20.glAttachShader(program, vertexShader);
-			GLES20.glAttachShader(program, gridShader);
+			if(this instanceof GLSelectableObject){
+				GLES20.glAttachShader(program, passthroughShader);
+			} else {
+				GLES20.glAttachShader(program, gridShader);
+			}
 			GLES20.glLinkProgram(program);
 			GLES20.glUseProgram(program);
 
@@ -384,7 +398,7 @@ public class OpenGlStuff {
 
 			checkGLError("Floor program params");
 			Matrix.setIdentityM(model, 0);
-			Matrix.translateM(model, 0, 0, -yPos, -distance); // Floor appears
+			Matrix.translateM(model, 0, 0, -yPos, -zPos); // Floor appears
 			// below user.
 			
 		}
@@ -397,10 +411,10 @@ public class OpenGlStuff {
 			this.model = modelFloor;
 		}
 		public float getDistance() {
-			return distance;
+			return zPos;
 		}
 		public void setDistance(float distance) {
-			this.distance = distance;
+			this.zPos = distance;
 		}
 	}
 	
@@ -408,10 +422,9 @@ public class OpenGlStuff {
 
 		private FloatBuffer cubeFoundColors;
 		
-		public GLSelectableObject(){}
-		public GLSelectableObject(float y, float distance){
-			this.yPos = y;
-			this.distance = distance;
+//		public GLSelectableObject(){}
+		public GLSelectableObject(float xPos, float yPos, float zPos){
+			super(xPos, yPos, zPos);
 		}
 
 		public void cubeStuff() {
