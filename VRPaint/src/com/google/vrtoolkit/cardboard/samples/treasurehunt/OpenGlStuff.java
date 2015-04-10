@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -41,8 +42,13 @@ public class OpenGlStuff {
 
 	private final float[] lightPosInEyeSpace = new float[4];
 
-	private GLObject floor = new GLObject(0f,20f,0f);
+	private int vertexShader;
+	private int gridShader;
+	private int passthroughShader;
+
+	private GLObject floor = new GLObject(0f, 20f, 0f);
 	private List<GLSelectableObject> cubes = new ArrayList<GLSelectableObject>();
+	private GLSelectableObject currentNew = new GLSelectableObject(0f, 0f, 20f);
 
 	private float[] camera = new float[16];
 	private float[] view = new float[16];
@@ -54,9 +60,36 @@ public class OpenGlStuff {
 
 	public OpenGlStuff(MainActivity main) {
 		this.main = main;
-		cubes.add(new GLSelectableObject(0f, 0f, 12f));
-		cubes.add(new GLSelectableObject(0f, 0f, 12f));
-		hideObject(cubes.get(1));
+
+		currentNew = new GLSelectableObject(0f, 0f, 20f);
+
+		currentNew.cubeStuff();
+		currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
+	}
+	
+	public void createObject(){
+		placeObjectInfrontOfCamera(currentNew);
+		
+		cubes.add(currentNew);
+		
+
+		currentNew = new GLSelectableObject(0f, 0f, 20f);
+
+		currentNew.cubeStuff();
+		currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
+		
+	}
+
+	private void placeObjectInfrontOfCamera(GLObject moveObject) {
+		float[] resultVector = new float[3];
+		float[] cVector = { 0, 0, -20 };
+		mvMult(resultVector, headView, cVector);
+		cVector[0] = resultVector[0];
+		cVector[1] = resultVector[1];
+		cVector[2] = resultVector[2];
+		moveObject.getModel()[12]=resultVector[0];
+		moveObject.getModel()[13]=resultVector[1];
+		moveObject.getModel()[14]=resultVector[2];
 	}
 
 	/**
@@ -96,7 +129,9 @@ public class OpenGlStuff {
 	/**
 	 * Converts a raw text file into a string.
 	 *
-	 * @param resId The resource ID of the raw text file about to be turned into a shader.
+	 * @param resId
+	 *            The resource ID of the raw text file about to be turned into a
+	 *            shader.
 	 * @return The context of the text file, or null in case of error.
 	 */
 	private String readRawTextFile(int resId) {
@@ -128,13 +163,20 @@ public class OpenGlStuff {
 	 */
 	public void onSurfaceCreated(EGLConfig config) {
 		Log.i(TAG, "onSurfaceCreated");
-		GLES20.glClearColor(0.8f, 0.8f, 0.8f, 0.5f); // Dark background so text shows up well.
+		GLES20.glClearColor(0.8f, 0.8f, 0.8f, 0.5f); // Dark background so text
+														// shows up well.
 
-		int vertexShader = loadGLShader(GLES20.GL_VERTEX_SHADER, R.raw.light_vertex);
-		int gridShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.grid_fragment);
-		int passthroughShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.passthrough_fragment);
+		vertexShader = loadGLShader(GLES20.GL_VERTEX_SHADER, R.raw.light_vertex);
+		gridShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.grid_fragment);
+		passthroughShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.passthrough_fragment);
+
+
+		currentNew = new GLSelectableObject(0f, 0f, 20f);
+
+		currentNew.cubeStuff();
+		currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
 		
-		for(GLSelectableObject cube : cubes){
+		for (GLSelectableObject cube : cubes) {
 			cube.cubeStuff();
 			cube.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
 		}
@@ -147,9 +189,11 @@ public class OpenGlStuff {
 	}
 
 	/**
-	 * Checks if we've had an error inside of OpenGL ES, and if so what that error is.
+	 * Checks if we've had an error inside of OpenGL ES, and if so what that
+	 * error is.
 	 *
-	 * @param label  Label to report in case of error.
+	 * @param label
+	 *            Label to report in case of error.
 	 */
 	private static void checkGLError(String label) {
 		int error;
@@ -159,30 +203,35 @@ public class OpenGlStuff {
 		}
 	}
 
+	public void printMatrix(float[] matrix) {
+		for (int i = 0; i < 4; i++)
+			Log.i("TEST", "|" + String.format("%.3f", matrix[i * 4]) + "|" + "" + String.format("%.3f", matrix[i * 4 + 1]) + "|" + "" + String.format("%.3f", matrix[i * 4 + 2])
+					+ "|" + "" + String.format("%.3f", matrix[i * 4 + 3]) + "|");
+		Log.i("TEST", "End");
+	}
+
 	/**
 	 * Prepares OpenGL ES before we draw a frame.
 	 *
-	 * @param headTransform The head transformation in the new frame.
+	 * @param headTransform
+	 *            The head transformation in the new frame.
 	 */
+	public void mvMult(float a[], float b[], float c[]) {
+		a[0] = b[0] * c[0] + b[1] * c[1] + b[2] * c[2];
+		a[1] = b[4] * c[0] + b[5] * c[1] + b[6] * c[2];
+		a[2] = b[8] * c[0] + b[9] * c[1] + b[10] * c[2];
+	}
+
 	public void onNewFrame(HeadTransform headTransform) {
-		{
-			float[] fVector = new float[3];
-			headTransform.getForwardVector(fVector, 0);
-			Matrix.setIdentityM(cubes.get(0).getModel(), 0);
-			Matrix.translateM(cubes.get(0).getModel(), 0, -fVector[0]*20, -fVector[1]*20, fVector[2]*20);
-		}
-		for(GLSelectableObject cube : cubes){
-			// Build the Model part of the ModelView matrix.
-			Matrix.rotateM(cube.getModel(), 0, TIME_DELTA, 0.5f, 0.5f, 1.0f);
-		}
+		headTransform.getHeadView(headView, 0);
+		
+		createObject();
+		
+		placeObjectInfrontOfCamera(currentNew);
 		
 
 		// Build the camera matrix and apply it to the ModelView.
 		Matrix.setLookAtM(camera, 0, Eyes[0], Eyes[1], CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-		// Matrix.setLookAtM(camera, 0, Eyes[0], Eyes[1], CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-		// Matrix.setLookAtM(camera, 0, 0.0f, Eyes[0], Eyes[1], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-
-		headTransform.getHeadView(headView, 0);
 
 		checkGLError("onReadyToDraw");
 	}
@@ -205,12 +254,19 @@ public class OpenGlStuff {
 		Matrix.multiplyMV(lightPosInEyeSpace, 0, view, 0, LIGHT_POS_IN_WORLD_SPACE, 0);
 
 		float[] perspective = eye.getPerspective(Z_NEAR, Z_FAR);
-		for(GLSelectableObject cube : cubes){
+		for (GLSelectableObject cube : cubes) {
 			// Build the ModelView and ModelViewProjection matrices
 			// for calculating cube position and light.
 			Matrix.multiplyMM(modelView, 0, view, 0, cube.getModel(), 0);
 			Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
 			cube.drawCube();
+		}
+		
+		if(currentNew != null){
+
+			Matrix.multiplyMM(modelView, 0, view, 0, currentNew.getModel(), 0);
+			Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+			currentNew.drawCube();
 		}
 
 		// Set modelView for the floor, so we draw floor in the correct location
@@ -258,8 +314,8 @@ public class OpenGlStuff {
 	 * @return true if the user is looking at the object.
 	 */
 	public GLSelectableObject isLookingAtObject() {
-		for(GLSelectableObject cube : cubes){
-			if(isLookingAtObject(cube)){
+		for (GLSelectableObject cube : cubes) {
+			if (isLookingAtObject(cube)) {
 				return cube;
 			}
 		}
@@ -306,14 +362,14 @@ public class OpenGlStuff {
 		protected float xPos = 0f;
 		protected float yPos = 0f;
 		protected float zPos = 0f;
-		
-//		public GLObject(){}
-		public GLObject(float xPos, float yPos, float zPos){
+
+		// public GLObject(){}
+		public GLObject(float xPos, float yPos, float zPos) {
 			this.xPos = xPos;
 			this.yPos = yPos;
 			this.zPos = zPos;
 		}
-		
+
 		public void floorStuff() {
 			// make a floor
 			ByteBuffer bbFloorVertices = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_COORDS.length * 4);
@@ -373,7 +429,7 @@ public class OpenGlStuff {
 		public void onSurfaceCreated(int vertexShader, int gridShader, int passthroughShader) {
 			program = GLES20.glCreateProgram();
 			GLES20.glAttachShader(program, vertexShader);
-			if(this instanceof GLSelectableObject){
+			if (this instanceof GLSelectableObject) {
 				GLES20.glAttachShader(program, passthroughShader);
 			} else {
 				GLES20.glAttachShader(program, gridShader);
@@ -400,7 +456,7 @@ public class OpenGlStuff {
 			Matrix.setIdentityM(model, 0);
 			Matrix.translateM(model, 0, 0, -yPos, -zPos); // Floor appears
 			// below user.
-			
+
 		}
 
 		public float[] getModel() {
@@ -408,22 +464,26 @@ public class OpenGlStuff {
 		}
 
 		public void setModel(float[] modelFloor) {
-			this.model = modelFloor;
+			for (int k = 0; k > modelFloor.length; k++)
+				model[k] = modelFloor[k];
+			// this.model = modelFloor;
 		}
+
 		public float getDistance() {
 			return zPos;
 		}
+
 		public void setDistance(float distance) {
 			this.zPos = distance;
 		}
 	}
-	
+
 	public class GLSelectableObject extends GLObject {
 
 		private FloatBuffer cubeFoundColors;
-		
-//		public GLSelectableObject(){}
-		public GLSelectableObject(float xPos, float yPos, float zPos){
+
+		// public GLSelectableObject(){}
+		public GLSelectableObject(float xPos, float yPos, float zPos) {
 			super(xPos, yPos, zPos);
 		}
 
