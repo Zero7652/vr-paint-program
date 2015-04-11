@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.vrtoolkit.cardboard.samples.treasurehunt;
+package edu.washburn.vrtoolkit.cardboard.vrpaint;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -190,12 +190,9 @@ public class CardboardOverlayView extends LinearLayout {
       if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
           if (event.getRepeatCount() == 0) {
               switch (keyCode) {
-                  // Handle gamepad and D-pad button presses to
-                  // navigate the ship
 
                   default:
                        if (isFireKey(keyCode)) {
-                           // Update the ship object to fire lasers
                            handled = true;
                        }
                    break;

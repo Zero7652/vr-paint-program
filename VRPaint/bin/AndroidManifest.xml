@@ -16,7 +16,7 @@
             android:label="@string/app_name" >
 
         <activity
-                android:name=".MainActivity"
+                android:name="edu.washburn.vrtoolkit.cardboard.vrpaint.MainActivity"
                 android:label="@string/app_name"
                 android:screenOrientation="landscape"
                 android:configChanges="orientation|keyboardHidden|screenSize" >

@@ -1,10 +1,9 @@
-package com.google.vrtoolkit.cardboard.samples.treasurehunt;
+package edu.washburn.vrtoolkit.cardboard.vrpaint;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -19,6 +18,7 @@ import android.util.Log;
 
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
+import com.google.vrtoolkit.cardboard.samples.treasurehunt.R;
 
 public class OpenGlStuff {
 
@@ -42,13 +42,17 @@ public class OpenGlStuff {
 
 	private final float[] lightPosInEyeSpace = new float[4];
 
+	private OpenGlControl control = new OpenGlControl();
 	private int vertexShader;
 	private int gridShader;
 	private int passthroughShader;
 
-	private GLObject floor = new GLObject(0f, 20f, 0f);
+	private GLObject floor = new GLObject(0f, -20f, 0f);
 	private List<GLSelectableObject> cubes = new ArrayList<GLSelectableObject>();
-	private GLSelectableObject currentNew = new GLSelectableObject(0f, 0f, 20f);
+	
+	private float[] pos = {0f,0f,-20f};
+	private GLSelectableObject currentNew = new GLSelectableObject(pos[0], pos[1], pos[2]);
+	
 
 	private float[] camera = new float[16];
 	private float[] view = new float[16];
@@ -58,31 +62,32 @@ public class OpenGlStuff {
 
 	private MainActivity main;
 
+	private boolean createNew ;
+
 	public OpenGlStuff(MainActivity main) {
 		this.main = main;
-
-		currentNew = new GLSelectableObject(0f, 0f, 20f);
-
-		currentNew.cubeStuff();
-		currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
 	}
 	
-	public void createObject(){
-		placeObjectInfrontOfCamera(currentNew);
-		
-		cubes.add(currentNew);
-		
-
-		currentNew = new GLSelectableObject(0f, 0f, 20f);
-
-		currentNew.cubeStuff();
-		currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
-		
+	public void createObject(boolean createNew){
+		this.createNew = createNew;
+	}
+	
+	public void moveUser(boolean move){
+		control.getMoveUser().setMoving(move);
+		control.getMoveObject().setMoving(!move);
+	}
+	
+	public void processX(float zPos){
+		control.processX(zPos);
+	}
+	
+	public void processY(float zPos){
+		control.processY(zPos);
 	}
 
 	private void placeObjectInfrontOfCamera(GLObject moveObject) {
 		float[] resultVector = new float[3];
-		float[] cVector = { 0, 0, -20 };
+		float[] cVector = {pos[0], pos[1], pos[2]};
 		mvMult(resultVector, headView, cVector);
 		cVector[0] = resultVector[0];
 		cVector[1] = resultVector[1];
@@ -171,7 +176,7 @@ public class OpenGlStuff {
 		passthroughShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.passthrough_fragment);
 
 
-		currentNew = new GLSelectableObject(0f, 0f, 20f);
+		currentNew = new GLSelectableObject(pos[0], pos[1], pos[2]);
 
 		currentNew.cubeStuff();
 		currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
@@ -224,10 +229,35 @@ public class OpenGlStuff {
 
 	public void onNewFrame(HeadTransform headTransform) {
 		headTransform.getHeadView(headView, 0);
-		
-		createObject();
-		
 		placeObjectInfrontOfCamera(currentNew);
+		
+		if(control.isNewFrameControl()){
+			if(control.getMoveUser().isMoving()){
+				for(GLSelectableObject cube : cubes){
+					Matrix.translateM(cube.getModel(), 0, control.getMoveUser().getMoveX(), control.getMoveUser().getMoveY(), control.getMoveUser().getMoveZ());
+				}
+				Log.i("test", "moved cubes");
+			}
+			if(control.getMoveObject().isMoving()){
+				pos[0] += control.getMoveObject().getMoveX();
+				pos[1] += control.getMoveObject().getMoveY();
+				pos[2] += control.getMoveObject().getMoveZ();
+				if(pos[2] > 0)
+					pos[2] = 0;
+			}
+		}
+		
+		if( createNew == true){
+			
+			cubes.add(currentNew);
+
+			currentNew = new GLSelectableObject(pos[0], pos[1], pos[2]);
+			currentNew.cubeStuff();
+			currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
+			placeObjectInfrontOfCamera(currentNew);
+//			createNew = false;
+		}
+
 		
 
 		// Build the camera matrix and apply it to the ModelView.
@@ -454,7 +484,7 @@ public class OpenGlStuff {
 
 			checkGLError("Floor program params");
 			Matrix.setIdentityM(model, 0);
-			Matrix.translateM(model, 0, 0, -yPos, -zPos); // Floor appears
+			Matrix.translateM(model, 0, xPos, yPos, zPos); // Floor appears
 			// below user.
 
 		}

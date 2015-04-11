@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.vrtoolkit.cardboard.samples.treasurehunt;
+package edu.washburn.vrtoolkit.cardboard.vrpaint;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
@@ -31,7 +31,9 @@ import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
-import com.google.vrtoolkit.cardboard.samples.treasurehunt.OpenGlStuff.GLSelectableObject;
+import com.google.vrtoolkit.cardboard.samples.treasurehunt.R;
+
+import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff.GLSelectableObject;
 
 /**
  * A Cardboard sample application.
@@ -139,7 +141,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
   @Override
   public boolean dispatchGenericMotionEvent(MotionEvent event) {
 	// Check that the event came from a game controller
-      if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.getAction() == MotionEvent.ACTION_MOVE) {
+      if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK ) {
 
           // Process all historical movement samples in the batch
           final int historySize = event.getHistorySize();
@@ -165,22 +167,32 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 	    // using the input value from one of these physical controls:
 	    // the left control stick, hat axis, or the right control stick.
 	    float x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_X, historyPos);
+
+        openGlStuff.processX(x);
 	    if (x == 0) {
 	        x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
+//	        openGlStuff.processX(x);
 	    }
 	    if (x == 0) {
 	        x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
+//	        openGlStuff.processX(x);
 	    }
 
 	    // Calculate the vertical distance to move by
 	    // using the input value from one of these physical controls:
 	    // the left control stick, hat switch, or the right control stick.
 	    float y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
+
+        openGlStuff.processY(y);
 	    if (y == 0) {
 	        y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
+//	        openGlStuff.processY(y);
 	    }
 	    if (y == 0) {
 	        y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
+
+//	        openGlStuff.processY(y);
+
 	    }
 
 	    // Update the ship object based on the new x and y values
@@ -213,19 +225,24 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
   public boolean dispatchKeyEvent(KeyEvent event) {
 	  boolean handled = false;
       if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
-          if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN) {
+//          if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN) {
         	  int keyCode = event.getKeyCode();
-              switch (keyCode) {
-                  // Handle gamepad and D-pad button presses to
-                  // navigate the ship
 
-                  default:
+      	    Log.i(OpenGlStuff.TAG, ""+keyCode);
+              switch (keyCode) {
+              	case 189:
+            	  openGlStuff.createObject(event.getAction() == KeyEvent.ACTION_DOWN);
+            	  break;
+              	case 190:
+              		openGlStuff.moveUser(event.getAction() == KeyEvent.ACTION_DOWN);
+              		break;
+                default:
                        if (CardboardOverlayView.isFireKey(keyCode)) {
                            // Update the ship object to fire lasers
 
                     	    Log.i(OpenGlStuff.TAG, "on SOURCE_GAMEPAD");
 
-                    	    processTrigger();
+//                    	    processTrigger();
                            handled = true;
                        }
                    break;
@@ -234,7 +251,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
           if (handled) {
               return true;
           }
-      }
+//      }
       return super.dispatchKeyEvent(event);
   }
 }
