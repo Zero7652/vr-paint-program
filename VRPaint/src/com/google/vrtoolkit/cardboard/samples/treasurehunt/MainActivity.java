@@ -178,7 +178,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         });
     }
 
-  private void processTrigger() {
+  private void processTrigger() { 
 	  GLSelectableObject cube;
 	if ((cube = openGlStuff.isLookingAtObject()) != null) {
       score++;
