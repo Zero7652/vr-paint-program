@@ -16,8 +16,13 @@
 
 package edu.washburn.vrtoolkit.cardboard.vrpaint;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.Socket;
+
 import javax.microedition.khronos.egl.EGLConfig;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -45,6 +50,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
   private Vibrator vibrator;
   private CardboardOverlayView overlayView;
   private OpenGlStuff openGlStuff;
+  private Socket s;
+  private BufferedReader in;
+    private String line;
 
   /**
    * Sets the view to our CardboardView and initializes the transformation matrices we will use
@@ -65,6 +73,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     overlayView = (CardboardOverlayView) findViewById(R.id.overlay);
     overlayView.show3DToast("Pull the magnet when you find an object.");
+      runThread();
+      //controllerThread(MainActivity.this);
   }
 
   @Override
@@ -123,6 +133,53 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     Log.i(OpenGlStuff.TAG, "onCardboardTrigger");
     processTrigger();
   }
+
+    /////////////N E T W O R K  /////////////S O C K E T ////////////C O D E Z Z Z Z
+    public void runThread()
+    {
+        Thread tr = new Thread(new Runnable(){
+            @Override
+            public void run() {
+                try {
+                    s=new Socket("192.168.3.2",5009);
+                    in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                    while(true)
+                    {
+                        while((line=in.readLine())!=null)
+                        {
+                            runThread2(MainActivity.this);
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+        });
+        tr.start();
+    }
+
+    private void runThread2(Activity act) {
+        act.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                vibrator.vibrate(50);
+
+                if (line.equals("7")) openGlStuff.moveCursor(-0.5f, 0.5f);
+                if (line.equals("8")) openGlStuff.moveCursor(0f, 0.5f);
+                if (line.equals("9")) openGlStuff.moveCursor(0.5f, 0.5f);
+                if (line.equals("4")) openGlStuff.moveCursor(-0.5f, 0f);
+                if (line.equals("6")) openGlStuff.moveCursor(0.5f, 0f);
+                if (line.equals("1")) openGlStuff.moveCursor(-0.5f, -0.5f);
+                if (line.equals("2")) openGlStuff.moveCursor(0f, -0.5f);
+                if (line.equals("3")) openGlStuff.moveCursor(0.5f, -0.5f);
+                if (line.equals("5") && (openGlStuff.drawing == false)) {
+                    openGlStuff.drawing = true;
+                } else {
+                    openGlStuff.drawing = false;
+                }
+            }
+        });
+    }
 
   private void processTrigger() {
 	  GLSelectableObject cube;

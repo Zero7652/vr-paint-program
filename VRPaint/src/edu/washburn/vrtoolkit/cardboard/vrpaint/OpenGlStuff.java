@@ -52,6 +52,8 @@ public class OpenGlStuff {
 	
 	private float[] pos = {0f,0f,-20f};
 	private GLSelectableObject currentNew = new GLSelectableObject(pos[0], pos[1], pos[2]);
+
+    public boolean drawing = false;
 	
 
 	private float[] camera = new float[16];
@@ -77,26 +79,45 @@ public class OpenGlStuff {
 		control.getMoveObject().setMoving(!move);
 	}
 	
-	public void processX(float zPos){
-		control.processX(zPos);
+	public void processX(float pos){
+		if(control.getMoveUser().isMoving()){
+			float[] resultVector = new float[3];
+			float[] cVector = {pos, 0f, 0f};
+			mvMult(resultVector, headView, cVector);
+			control.getMoveUser().setMoveX(resultVector[0]);
+			control.getMoveUser().setMoveY(resultVector[1]);
+			control.getMoveUser().setMoveZ(resultVector[2]);
+		} else {
+			control.processX(pos);
+		}
 	}
 	
-	public void processY(float zPos){
-		control.processY(zPos);
+	public void processY(float pos){
+		if(control.getMoveUser().isMoving()){
+			float[] resultVector = new float[3];
+			float[] cVector = {0f, 0f, pos};
+			mvMult(resultVector, headView, cVector);
+			control.getMoveUser().setMoveX(resultVector[0]);
+			control.getMoveUser().setMoveY(resultVector[1]);
+			control.getMoveUser().setMoveZ(resultVector[2]);
+		} else {
+			control.processY(pos);
+		}
 	}
 
 	private void placeObjectInfrontOfCamera(GLObject moveObject) {
 		float[] resultVector = new float[3];
 		float[] cVector = {pos[0], pos[1], pos[2]};
 		mvMult(resultVector, headView, cVector);
-		cVector[0] = resultVector[0];
-		cVector[1] = resultVector[1];
-		cVector[2] = resultVector[2];
 		moveObject.getModel()[12]=resultVector[0];
 		moveObject.getModel()[13]=resultVector[1];
 		moveObject.getModel()[14]=resultVector[2];
 	}
 
+    public void moveCursor(float i, float j){
+    	processX(i);
+    	processY(j);
+    }
 	/**
 	 * Converts a raw text file, saved as a resource, into an OpenGL ES shader.
 	 *
