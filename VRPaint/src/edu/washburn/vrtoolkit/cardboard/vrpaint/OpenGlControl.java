@@ -1,5 +1,7 @@
 package edu.washburn.vrtoolkit.cardboard.vrpaint;
 
+import android.util.Log;
+
 
 public class OpenGlControl {
 	public final static float episolon = 0.000001f;
@@ -14,7 +16,7 @@ public class OpenGlControl {
 			return true;
 		} else if(moveObject.isMoving()){
 			moveObject.setMoveZ(y);
-//			moveObject.setScale(x);
+			moveObject.setScale(1+(x/100));
 			return true;
 		}
 		return false;
