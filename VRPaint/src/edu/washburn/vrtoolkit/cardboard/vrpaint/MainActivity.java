@@ -164,14 +164,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             public void run() {
                 vibrator.vibrate(50);
 
-                if (line.equals("7")) openGlStuff.moveCursor(-0.5f, 0.5f);
-                if (line.equals("8")) openGlStuff.moveCursor(0f, 0.5f);
-                if (line.equals("9")) openGlStuff.moveCursor(0.5f, 0.5f);
-                if (line.equals("4")) openGlStuff.moveCursor(-0.5f, 0f);
-                if (line.equals("6")) openGlStuff.moveCursor(0.5f, 0f);
-                if (line.equals("1")) openGlStuff.moveCursor(-0.5f, -0.5f);
-                if (line.equals("2")) openGlStuff.moveCursor(0f, -0.5f);
-                if (line.equals("3")) openGlStuff.moveCursor(0.5f, -0.5f);
+                if (line.equals("7")) openGlStuff.processMove(-0.5f, 0.5f);
+                if (line.equals("8")) openGlStuff.processMove(0f, 0.5f);
+                if (line.equals("9")) openGlStuff.processMove(0.5f, 0.5f);
+                if (line.equals("4")) openGlStuff.processMove(-0.5f, 0f);
+                if (line.equals("6")) openGlStuff.processMove(0.5f, 0f);
+                if (line.equals("1")) openGlStuff.processMove(-0.5f, -0.5f);
+                if (line.equals("2")) openGlStuff.processMove(0f, -0.5f);
+                if (line.equals("3")) openGlStuff.processMove(0.5f, -0.5f);
                 if (line.equals("5") && (openGlStuff.drawing == false)) {
                     openGlStuff.drawing = true;
                 } else {
@@ -224,38 +224,24 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 	    // using the input value from one of these physical controls:
 	    // the left control stick, hat axis, or the right control stick.
 	    float x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_X, historyPos);
-
-        openGlStuff.processX(x);
-	    if (x == 0) {
-	        x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
-//	        openGlStuff.processX(x);
-	    }
-	    if (x == 0) {
-	        x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
-//	        openGlStuff.processX(x);
-	    }
-
-	    // Calculate the vertical distance to move by
-	    // using the input value from one of these physical controls:
-	    // the left control stick, hat switch, or the right control stick.
 	    float y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
 
-        openGlStuff.processY(y);
-	    if (y == 0) {
+        openGlStuff.processMove(x,y);
+	    if (x == 0 || y == 0) {
+	        x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
 	        y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
-//	        openGlStuff.processY(y);
 	    }
-	    if (y == 0) {
+	    if (x == 0 || y == 0) {
+	        x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
 	        y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
-
-//	        openGlStuff.processY(y);
-
 	    }
 
-	    // Update the ship object based on the new x and y values
-//	    Eyes[0] += x;
-//	    Eyes[1] += y;
 	}
+  
+  
+//  jason kopecky
+//  american family insurance 
+//  po box 2570 meryland heights mo 63043
   
   private static float getCenteredAxis(MotionEvent event, InputDevice device, int axis, int historyPos) {
 	    final InputDevice.MotionRange range = device.getMotionRange(axis, event.getSource());

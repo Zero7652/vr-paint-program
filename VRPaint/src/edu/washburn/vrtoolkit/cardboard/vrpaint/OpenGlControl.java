@@ -1,27 +1,20 @@
 package edu.washburn.vrtoolkit.cardboard.vrpaint;
 
-import android.util.Log;
 
 public class OpenGlControl {
 	public final static float episolon = 0.000001f;
 	private MoveObject moveObject = new MoveObject();
 	private MoveObject moveUser = new MoveObject(false);
 
-	public boolean processX(float x){
-		if(moveUser.isMoving()){
-			moveUser.setMoveX(x);
-			return true;
-		} else if(moveObject.isMoving()){
-			return true;
-		}
-		return false;
-	}
-	public boolean processY(float y){
-		if(moveUser.isMoving()){
-			moveUser.setMoveZ(y);
+	public boolean processMove(float x, float y, float [] vector){
+		if(moveUser.isMoving() && vector != null){
+			moveUser.setMoveX(vector[0]);
+			moveUser.setMoveY(vector[1]);
+			moveUser.setMoveZ(vector[2]);
 			return true;
 		} else if(moveObject.isMoving()){
 			moveObject.setMoveZ(y);
+//			moveObject.setScale(x);
 			return true;
 		}
 		return false;
@@ -49,6 +42,7 @@ public class OpenGlControl {
 		float moveX = 0;
 		float moveY = 0;
 		float moveZ = 0;
+		float scale = 1;
 		public MoveObject(){};
 		public MoveObject(boolean moving){
 			this.moving = moving;
@@ -82,6 +76,12 @@ public class OpenGlControl {
 		}
 		public void setMoving(boolean moving) {
 			this.moving = moving;
+		}
+		public float getScale() {
+			return scale;
+		}
+		public void setScale(float scale) {
+			this.scale = scale;
 		}
 	}
 }

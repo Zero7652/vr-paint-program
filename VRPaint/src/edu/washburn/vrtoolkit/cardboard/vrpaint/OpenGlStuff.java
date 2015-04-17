@@ -78,30 +78,15 @@ public class OpenGlStuff {
 		control.getMoveUser().setMoving(move);
 		control.getMoveObject().setMoving(!move);
 	}
-	
-	public void processX(float pos){
+
+	public void processMove(float x, float y){
 		if(control.getMoveUser().isMoving()){
 			float[] resultVector = new float[3];
-			float[] cVector = {pos, 0f, 0f};
+			float[] cVector = {x, 0f, -y};
 			mvMult(resultVector, headView, cVector);
-			control.getMoveUser().setMoveX(resultVector[0]);
-			control.getMoveUser().setMoveY(resultVector[1]);
-			control.getMoveUser().setMoveZ(resultVector[2]);
+			control.processMove(x, y, resultVector);
 		} else {
-			control.processX(pos);
-		}
-	}
-	
-	public void processY(float pos){
-		if(control.getMoveUser().isMoving()){
-			float[] resultVector = new float[3];
-			float[] cVector = {0f, 0f, pos};
-			mvMult(resultVector, headView, cVector);
-			control.getMoveUser().setMoveX(resultVector[0]);
-			control.getMoveUser().setMoveY(resultVector[1]);
-			control.getMoveUser().setMoveZ(resultVector[2]);
-		} else {
-			control.processY(pos);
+			control.processMove(x, y, null);
 		}
 	}
 
@@ -114,10 +99,6 @@ public class OpenGlStuff {
 		moveObject.getModel()[14]=resultVector[2];
 	}
 
-    public void moveCursor(float i, float j){
-    	processX(i);
-    	processY(j);
-    }
 	/**
 	 * Converts a raw text file, saved as a resource, into an OpenGL ES shader.
 	 *
@@ -251,12 +232,14 @@ public class OpenGlStuff {
 	public void onNewFrame(HeadTransform headTransform) {
 		headTransform.getHeadView(headView, 0);
 		placeObjectInfrontOfCamera(currentNew);
+		Matrix.scaleM(currentNew.getModel(), 0, control.getMoveObject().getScale(), control.getMoveObject().getScale(), control.getMoveObject().getScale());
 		
 		if(control.isNewFrameControl()){
 			if(control.getMoveUser().isMoving()){
 				for(GLSelectableObject cube : cubes){
 					Matrix.translateM(cube.getModel(), 0, control.getMoveUser().getMoveX(), control.getMoveUser().getMoveY(), control.getMoveUser().getMoveZ());
 				}
+				Matrix.translateM(floor.getModel(), 0, control.getMoveUser().getMoveX(), control.getMoveUser().getMoveY(), control.getMoveUser().getMoveZ());
 				Log.i("test", "moved cubes");
 			}
 			if(control.getMoveObject().isMoving()){
