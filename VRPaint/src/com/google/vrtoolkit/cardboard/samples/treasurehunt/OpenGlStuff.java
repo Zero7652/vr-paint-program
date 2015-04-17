@@ -21,7 +21,11 @@ import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 
 public class OpenGlStuff {
-
+    private static final int NOT_DRAWING = 0;
+    private static final int FREE_DRAWING = 1;
+    private static final int LINE = 2;
+    private static final int CIRCLE = 3;
+    private static final int POLYGON = 4;
     public static final String TAG = "MainActivity";
 
     private static final float Z_NEAR = 0.1f;
@@ -34,7 +38,7 @@ public class OpenGlStuff {
     private static final float PITCH_LIMIT = 0.12f;
 
     private static final int COORDS_PER_VERTEX = 3;
-    private float[] cubeCoords = {0,0,20};
+    private float[] cubeCoords = {0f,0f,20f};
 
     // We keep the light always position just above the user.
     private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 2.0f, 0.0f, 1.0f };
@@ -47,10 +51,14 @@ public class OpenGlStuff {
     private int gridShader;
     private int passthroughShader;
     public boolean drawing = false;
+    public int drawingMode = NOT_DRAWING;
 
     private GLObject floor = new GLObject(0f, 20f, 0f);
     private List<GLSelectableObject> cubes = new ArrayList<GLSelectableObject>();
     private GLSelectableObject currentNew = new GLSelectableObject(cubeCoords[0], cubeCoords[1], cubeCoords[2]);
+
+    GLSelectableObject currentOld = new GLSelectableObject(0,0,0);
+    GLSelectableObject currentOldJR;
 
     private float[] camera = new float[16];
     private float[] view = new float[16];
@@ -63,7 +71,7 @@ public class OpenGlStuff {
     public OpenGlStuff(MainActivity main) {
         this.main = main;
 
-        currentNew = new GLSelectableObject(0f, 0f, 20f);
+        currentNew = new GLSelectableObject(cubeCoords[0], cubeCoords[1], cubeCoords[2]);
 
         currentNew.cubeStuff();
         currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
@@ -83,12 +91,67 @@ public class OpenGlStuff {
 
         cubes.add(currentNew);
 
-
-        currentNew = new GLSelectableObject(0f, 0f, 20f);
+        currentNew = new GLSelectableObject(cubeCoords[0], cubeCoords[1], cubeCoords[2]);
 
         currentNew.cubeStuff();
         currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
+    }
 
+
+    public void drawStuff(boolean drawingBoolean, int drawingModeInt){
+        drawing = drawingBoolean;
+        drawingMode = drawingModeInt;
+
+    }
+
+    private void createLine(int test)
+    {
+        if(test==1) {
+            placeObjectInfrontOfCamera(currentNew);
+            currentOld = currentNew;
+            cubes.add(currentOld);
+
+            currentNew = new GLSelectableObject(0, 0, 20f);
+            currentNew.cubeStuff();
+            currentNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
+            System.out.println("testing1111111111111111");
+            return;
+        }
+        if(test==2){
+
+            placeObjectInfrontOfCamera(currentNew);
+            currentOldJR = currentNew;
+            cubes.add(currentOldJR);
+
+            currentNew = new GLSelectableObject(cubeCoords[0], cubeCoords[1], cubeCoords[2]);
+
+            currentNew.cubeStuff();
+            currentNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
+            createLine(currentOld, currentOldJR);
+            System.out.println("testing222222222222222222");
+            return;
+        }
+    }
+    private void createLine(GLSelectableObject cube1, GLSelectableObject cube2){
+        //System.out.println("Head View: " + cube1.getModel()[12] + " || " + cube1.getModel()[13] + " || " + cube1.getModel()[14]);
+        double cubeDistance = Math.sqrt(
+                ((cube1.getModel()[12] - cube2.getModel()[12])*(cube1.getModel()[12] - cube2.getModel()[12])) +
+                ((cube1.getModel()[13] - cube2.getModel()[13])*(cube1.getModel()[13] - cube2.getModel()[13])) +
+                ((cube1.getModel()[14] - cube2.getModel()[14])*(cube1.getModel()[14] - cube2.getModel()[14]))
+        );
+        if(cubeDistance < 2) return;
+        //System.out.println("testingzzzz");
+        float mX = (cube1.getModel()[12] + cube2.getModel()[12])/2;
+        float mY = (cube1.getModel()[13] + cube2.getModel()[13])/2;
+        float mZ = (cube1.getModel()[14] + cube2.getModel()[14])/2;
+
+        GLSelectableObject currentMid = new GLSelectableObject(-mX,-mY,-mZ);
+        currentMid.cubeStuff();
+        currentMid.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
+        cubes.add(currentMid);
+        createLine(cube1,currentMid);
+        createLine(cube2,currentMid);
+        return;
     }
 
     private void placeObjectInfrontOfCamera(GLObject moveObject) {
@@ -233,14 +296,30 @@ public class OpenGlStuff {
         a[2] = b[8] * c[0] + b[9] * c[1] + b[10] * c[2];
     }
 
+
     public void onNewFrame(HeadTransform headTransform) {
         headTransform.getHeadView(headView, 0);
 
-        if(drawing==true)
-            createObject();
+        if(drawing==true){
+            if(drawingMode==FREE_DRAWING)
+                createObject();
+        }
+        if(drawingMode==LINE && drawing==true) {
+            createLine(1);
+            drawingMode = 0;
+        }
+        if(drawing==false && drawingMode==2) {
+            createLine(2);
+            drawingMode = 0;
+        }
+        if(drawingMode==CIRCLE);
+        if(drawingMode==POLYGON);
 
         placeObjectInfrontOfCamera(currentNew);
-
+        float[] uVector = new float[4];
+        headTransform.getUpVector(uVector,0);
+        //System.out.println("Up Vector: " + uVector[0] + " || " + uVector[1] + " || " + uVector[2]);
+        //System.out.println("Head View: " + headView[4] + " || " + headView[5] + " || " + headView[6]);
 
         // Build the camera matrix and apply it to the ModelView.
         Matrix.setLookAtM(camera, 0, Eyes[0], Eyes[1], CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
@@ -274,11 +353,16 @@ public class OpenGlStuff {
             cube.drawCube();
         }
 
+        //System.out.println("aaaaaaaaaaaaaaaaa");
         if(currentNew != null){
 
+            //System.out.println("bbbbbbbbbbbbbbbb");
             Matrix.multiplyMM(modelView, 0, view, 0, currentNew.getModel(), 0);
+            //System.out.println("vvvvvvvvvvvvvv");
             Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+            //System.out.println("dddddddddddddd");
             currentNew.drawCube();
+            //System.out.println("1234543546764786");
         }
 
         // Set modelView for the floor, so we draw floor in the correct location
