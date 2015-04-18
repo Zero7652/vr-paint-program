@@ -91,9 +91,15 @@ public class OpenGlStuff {
     }
 
     public void createObject(){
+        double cubeDistance = Math.sqrt(
+                ((currentOld.getModel()[12] - currentNew.getModel()[12])*(currentOld.getModel()[12] - currentNew.getModel()[12])) +
+                ((currentOld.getModel()[13] - currentNew.getModel()[13])*(currentOld.getModel()[13] - currentNew.getModel()[13])) +
+                ((currentOld.getModel()[14] - currentNew.getModel()[14])*(currentOld.getModel()[14] - currentNew.getModel()[14]))
+        );
+        if(cubeDistance < 2) return;
         placeObjectInfrontOfCamera(currentNew);
-
-        cubes.add(currentNew);
+        currentOld = currentNew;
+        cubes.add(currentOld);
 
         currentNew = new GLSelectableObject(cubeCoords[0], cubeCoords[1], cubeCoords[2]);
 
@@ -154,7 +160,7 @@ public class OpenGlStuff {
                 ((cube1.getModel()[13] - cube2.getModel()[13])*(cube1.getModel()[13] - cube2.getModel()[13])) +
                 ((cube1.getModel()[14] - cube2.getModel()[14])*(cube1.getModel()[14] - cube2.getModel()[14]))
         );
-        if(cubeDistance < 2) return;
+        if(cubeDistance < 0.7) return;
         float mX = (cube1.getModel()[12] + cube2.getModel()[12])/2;
         float mY = (cube1.getModel()[13] + cube2.getModel()[13])/2;
         float mZ = (cube1.getModel()[14] + cube2.getModel()[14])/2;
