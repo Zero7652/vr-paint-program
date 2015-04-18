@@ -174,6 +174,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 if (line.equals("l")) openGlStuff.selectMode(2);
                 if (line.equals("c")) openGlStuff.selectMode(3);
                 if (line.equals("p")) openGlStuff.selectMode(4);
+                if (line.equals("e")) openGlStuff.selectMode(0);
                 if (line.equals("5")&&openGlStuff.drawing==false) {
                     openGlStuff.drawStuff(true);
                 } else {

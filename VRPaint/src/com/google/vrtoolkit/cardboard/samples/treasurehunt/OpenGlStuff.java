@@ -24,9 +24,11 @@ public class OpenGlStuff {
     private static final int NOT_DRAWING = 0;
     private static final int FREE_DRAWING = 1;
     private static final int LINE = 2;
-    private static final int LINE_END = 25;
+    private static final int LINE_END = 21;
     private static final int CIRCLE = 3;
     private static final int POLYGON = 4;
+    private static final int POLYGON_MID = 41;
+    private static final int POLYGON_END = 42;
     public static final String TAG = "MainActivity";
 
     private static final float Z_NEAR = 0.1f;
@@ -58,6 +60,7 @@ public class OpenGlStuff {
     private List<GLSelectableObject> cubes = new ArrayList<GLSelectableObject>();
     private GLSelectableObject currentNew = new GLSelectableObject(cubeCoords[0], cubeCoords[1], cubeCoords[2]);
 
+    GLSelectableObject currentOlder = new GLSelectableObject(0,0,0);
     GLSelectableObject currentOld = new GLSelectableObject(0,0,0);
     GLSelectableObject currentOldJR;
 
@@ -104,6 +107,11 @@ public class OpenGlStuff {
     }
 
     public void selectMode(int drawingModeInt){
+        if(drawingMode==POLYGON_MID && drawingModeInt==NOT_DRAWING){
+            drawingMode = POLYGON_END;
+            drawing = true;
+            return;
+        }
         drawing = false;
         drawingMode = drawingModeInt;
     }
@@ -113,12 +121,12 @@ public class OpenGlStuff {
         if(test==1) {
             placeObjectInfrontOfCamera(currentNew);
             currentOld = currentNew;
+            currentOlder = currentOld;
             cubes.add(currentOld);
 
             currentNew = new GLSelectableObject(0, 0, 20f);
             currentNew.cubeStuff();
             currentNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
-            System.out.println("testing1111111111111111");
             drawingMode = LINE_END;
             return;
         }
@@ -133,7 +141,9 @@ public class OpenGlStuff {
             currentNew.cubeStuff();
             currentNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
             createLine(currentOld, currentOldJR);
-            System.out.println("testing222222222222222222");
+            if(drawingMode==POLYGON_MID){
+                currentOld = currentOldJR;
+            }
             return;
         }
     }
@@ -304,8 +314,7 @@ public class OpenGlStuff {
     public void onNewFrame(HeadTransform headTransform) {
         headTransform.getHeadView(headView, 0);
 
-        if(drawing==true){
-            if(drawingMode==FREE_DRAWING)
+        if(drawing==true && drawingMode==FREE_DRAWING){
                 createObject();
         }
         if(drawingMode==LINE && drawing==true) {
@@ -318,7 +327,18 @@ public class OpenGlStuff {
             drawingMode = LINE;
         }
         if(drawingMode==CIRCLE);
-        if(drawingMode==POLYGON);
+        if(drawingMode==POLYGON && drawing==true){
+            createLine(1);
+            drawingMode=POLYGON_MID;
+        }
+        if(drawingMode==POLYGON_MID && drawing==true){
+            createLine(2);
+            drawing = false;
+        }
+        if(drawingMode==POLYGON_END && drawing==true){
+            createLine(currentOlder,currentOldJR);
+            drawingMode = NOT_DRAWING;
+        }
 
         placeObjectInfrontOfCamera(currentNew);
         float[] uVector = new float[4];
