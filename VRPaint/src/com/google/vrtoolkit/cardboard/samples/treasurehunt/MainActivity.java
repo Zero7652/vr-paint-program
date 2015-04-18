@@ -138,7 +138,8 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             @Override
             public void run() {
                 try {
-                    s=new Socket("172.18.65.29",5009);
+                    //s=new Socket("172.18.65.29",5009);
+                    s=new Socket("192.168.3.2",5009);
                     in = new BufferedReader(new InputStreamReader(s.getInputStream()));
                     while(true)
                     {
@@ -169,10 +170,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 if (line.equals("1")) openGlStuff.moveCursor(-0.5, -0.5);
                 if (line.equals("2")) openGlStuff.moveCursor(0, -0.5);
                 if (line.equals("3")) openGlStuff.moveCursor(0.5, -0.5);
+                if (line.equals("f")) openGlStuff.selectMode(1);
+                if (line.equals("l")) openGlStuff.selectMode(2);
+                if (line.equals("c")) openGlStuff.selectMode(3);
+                if (line.equals("p")) openGlStuff.selectMode(4);
                 if (line.equals("5")&&openGlStuff.drawing==false) {
-                    openGlStuff.drawStuff(true,1);
+                    openGlStuff.drawStuff(true);
                 } else {
-                    openGlStuff.drawStuff(false,1);
+                    openGlStuff.drawStuff(false);
                 }
             }
         });

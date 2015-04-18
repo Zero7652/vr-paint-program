@@ -24,6 +24,7 @@ public class OpenGlStuff {
     private static final int NOT_DRAWING = 0;
     private static final int FREE_DRAWING = 1;
     private static final int LINE = 2;
+    private static final int LINE_END = 25;
     private static final int CIRCLE = 3;
     private static final int POLYGON = 4;
     public static final String TAG = "MainActivity";
@@ -98,10 +99,13 @@ public class OpenGlStuff {
     }
 
 
-    public void drawStuff(boolean drawingBoolean, int drawingModeInt){
+    public void drawStuff(boolean drawingBoolean){
         drawing = drawingBoolean;
-        drawingMode = drawingModeInt;
+    }
 
+    public void selectMode(int drawingModeInt){
+        drawing = false;
+        drawingMode = drawingModeInt;
     }
 
     private void createLine(int test)
@@ -115,6 +119,7 @@ public class OpenGlStuff {
             currentNew.cubeStuff();
             currentNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
             System.out.println("testing1111111111111111");
+            drawingMode = LINE_END;
             return;
         }
         if(test==2){
@@ -140,7 +145,6 @@ public class OpenGlStuff {
                 ((cube1.getModel()[14] - cube2.getModel()[14])*(cube1.getModel()[14] - cube2.getModel()[14]))
         );
         if(cubeDistance < 2) return;
-        //System.out.println("testingzzzz");
         float mX = (cube1.getModel()[12] + cube2.getModel()[12])/2;
         float mY = (cube1.getModel()[13] + cube2.getModel()[13])/2;
         float mZ = (cube1.getModel()[14] + cube2.getModel()[14])/2;
@@ -306,11 +310,12 @@ public class OpenGlStuff {
         }
         if(drawingMode==LINE && drawing==true) {
             createLine(1);
-            drawingMode = 0;
+            drawing = false;
         }
-        if(drawing==false && drawingMode==2) {
+        if(drawing==true && drawingMode==LINE_END) {
             createLine(2);
-            drawingMode = 0;
+            drawing = false;
+            drawingMode = LINE;
         }
         if(drawingMode==CIRCLE);
         if(drawingMode==POLYGON);
@@ -353,16 +358,10 @@ public class OpenGlStuff {
             cube.drawCube();
         }
 
-        //System.out.println("aaaaaaaaaaaaaaaaa");
         if(currentNew != null){
-
-            //System.out.println("bbbbbbbbbbbbbbbb");
             Matrix.multiplyMM(modelView, 0, view, 0, currentNew.getModel(), 0);
-            //System.out.println("vvvvvvvvvvvvvv");
             Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-            //System.out.println("dddddddddddddd");
             currentNew.drawCube();
-            //System.out.println("1234543546764786");
         }
 
         // Set modelView for the floor, so we draw floor in the correct location
@@ -578,7 +577,6 @@ public class OpenGlStuff {
 
         private FloatBuffer cubeFoundColors;
 
-        // public GLSelectableObject(){}
         public GLSelectableObject(float xPos, float yPos, float zPos) {
             super(xPos, yPos, zPos);
         }
