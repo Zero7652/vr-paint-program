@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -64,23 +65,34 @@ public class OpenGlStuff {
 
 	private MainActivity main;
 
-	private boolean createNew ;
-
 	public OpenGlStuff(MainActivity main) {
 		this.main = main;
 	}
 	
-	public void createObject(boolean createNew){
-		this.createNew = createNew;
+	public void buttonX(boolean down){
+		if(control.getObjectTool().isActive()){
+			control.getObjectTool().setCreating(down);
+		}
 	}
 	
-	public void moveUser(boolean move){
-		control.getMoveUser().setMoving(move);
-		control.getMoveObject().setMoving(!move);
+	public void buttonR1(boolean down){
+		if(down){
+			control.controlForward();
+			main.getOverlayView().show3DToast(control.getNewText());
+			control.setListChanged(false);
+		}
 	}
-
+	
+	public void buttonL1(boolean down){
+		if(down){
+			control.controlBack();
+			main.getOverlayView().show3DToast(control.getNewText());
+			control.setListChanged(false);
+		}
+	}
+	
 	public void processMove(float x, float y){
-		if(control.getMoveUser().isMoving()){
+		if(control.getMoveUser().isActive()){
 			float[] resultVector = new float[3];
 			float[] cVector = {x, 0f, -y};
 			mvMult(resultVector, headView, cVector);
@@ -88,15 +100,6 @@ public class OpenGlStuff {
 		} else {
 			control.processMove(x, y, null);
 		}
-	}
-
-	private void placeObjectInfrontOfCamera(GLObject moveObject) {
-		float[] resultVector = new float[3];
-		float[] cVector = {pos[0], pos[1], pos[2]};
-		mvMult(resultVector, headView, cVector);
-		moveObject.getModel()[12]=resultVector[0];
-		moveObject.getModel()[13]=resultVector[1];
-		moveObject.getModel()[14]=resultVector[2];
 	}
 
 	/**
@@ -229,44 +232,47 @@ public class OpenGlStuff {
 		a[2] = b[8] * c[0] + b[9] * c[1] + b[10] * c[2];
 	}
 
+	public void mvMult(float a[], int offset, float b[], float c[]) {
+		a[offset  ] = b[0] * c[0] + b[1] * c[1] + b[2] * c[2];
+		a[offset+1] = b[4] * c[0] + b[5] * c[1] + b[6] * c[2];
+		a[offset+2] = b[8] * c[0] + b[9] * c[1] + b[10] * c[2];
+	}
+
 	public void onNewFrame(HeadTransform headTransform) {
 		headTransform.getHeadView(headView, 0);
-		placeObjectInfrontOfCamera(currentNew);
-		Matrix.scaleM(currentNew.getModel(), 0, control.getMoveObject().getScale(), control.getMoveObject().getScale(), control.getMoveObject().getScale());
 		
 		if(control.isNewFrameControl()){
-			if(control.getMoveUser().isMoving()){
+			if(control.getMoveUser().isActive()){
 				for(GLSelectableObject cube : cubes){
 					Matrix.translateM(cube.getModel(), 0, control.getMoveUser().getMoveX(), control.getMoveUser().getMoveY(), control.getMoveUser().getMoveZ());
 				}
-				Matrix.translateM(floor.getModel(), 0, control.getMoveUser().getMoveX(), control.getMoveUser().getMoveY(), control.getMoveUser().getMoveZ());
-				Log.i("test", "moved cubes");
 			}
-			if(control.getMoveObject().isMoving()){
-				pos[0] += control.getMoveObject().getMoveX();
-				pos[1] += control.getMoveObject().getMoveY();
-				pos[2] += control.getMoveObject().getMoveZ();
+			if(control.getObjectTool().isActive()){
+				pos[0] += control.getObjectTool().getMoveX();
+				pos[1] += control.getObjectTool().getMoveY();
+				pos[2] += control.getObjectTool().getMoveZ();
 				if(pos[2] > 0)
 					pos[2] = 0;
+
+				mvMult(currentNew.getModel(), 12, headView, pos);
+				Matrix.scaleM(currentNew.getModel(), 0, control.getObjectTool().getScale(), control.getObjectTool().getScale(), control.getObjectTool().getScale());
 			}
 		}
 		
-		if( createNew == true){
-			
+		if( control.getObjectTool().isCreating()){
 			cubes.add(currentNew);
-
-			currentNew = new GLSelectableObject(pos[0], pos[1], pos[2]);
+			GLSelectableObject currentNew = new GLSelectableObject(pos[0], pos[1], pos[2]);
 			currentNew.cubeStuff();
 			currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
-			placeObjectInfrontOfCamera(currentNew);
-//			createNew = false;
+			mvMult(currentNew.getModel(), 12, headView, pos);
+			currentNew.getModel()[15] = this.currentNew.getModel()[15];
+			this.currentNew = currentNew;
 		}
 
 		
 
 		// Build the camera matrix and apply it to the ModelView.
 		Matrix.setLookAtM(camera, 0, Eyes[0], Eyes[1], CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-
 		checkGLError("onReadyToDraw");
 	}
 
@@ -296,8 +302,7 @@ public class OpenGlStuff {
 			cube.drawCube();
 		}
 		
-		if(currentNew != null){
-
+		if(currentNew != null && control.getObjectTool().isActive()){
 			Matrix.multiplyMM(modelView, 0, view, 0, currentNew.getModel(), 0);
 			Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
 			currentNew.drawCube();
@@ -377,7 +382,8 @@ public class OpenGlStuff {
 		return Math.abs(pitch) < PITCH_LIMIT && Math.abs(yaw) < YAW_LIMIT;
 	}
 
-	public class GLObject {
+	public class GLObject implements Serializable {
+		private static final long serialVersionUID = -190700753578576269L;
 		protected FloatBuffer vertices;
 		protected FloatBuffer colors;
 		protected FloatBuffer normals;
@@ -513,7 +519,7 @@ public class OpenGlStuff {
 	}
 
 	public class GLSelectableObject extends GLObject {
-
+		private static final long serialVersionUID = -1254358692821314275L;
 		private FloatBuffer cubeFoundColors;
 
 		// public GLSelectableObject(){}

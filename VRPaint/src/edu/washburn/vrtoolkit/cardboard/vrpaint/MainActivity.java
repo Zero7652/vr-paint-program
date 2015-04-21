@@ -72,7 +72,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
 
     overlayView = (CardboardOverlayView) findViewById(R.id.overlay);
-    overlayView.show3DToast("Pull the magnet when you find an object.");
+//    overlayView.show3DToast("Pull the magnet when you find an object.");
       runThread();
       //controllerThread(MainActivity.this);
   }
@@ -185,10 +185,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 	  GLSelectableObject cube;
 	if ((cube = openGlStuff.isLookingAtObject()) != null) {
       score++;
-      overlayView.show3DToast("Found it! Look around for another one.\nScore = " + score);
+//      overlayView.show3DToast("Found it! Look around for another one.\nScore = " + score);
       openGlStuff.hideObject(cube);
     } else {
-      overlayView.show3DToast("Look around to find the object!");
+//      overlayView.show3DToast("Look around to find the object!");
     }
 
     // Always give user feedback.
@@ -273,11 +273,17 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
       	    Log.i(OpenGlStuff.TAG, ""+keyCode);
               switch (keyCode) {
-              	case 189:
-            	  openGlStuff.createObject(event.getAction() == KeyEvent.ACTION_DOWN);
+              	case KeyEvent.KEYCODE_BUTTON_X:
+            	  openGlStuff.buttonX(event.getAction() == KeyEvent.ACTION_DOWN);
             	  break;
-              	case 190:
-              		openGlStuff.moveUser(event.getAction() == KeyEvent.ACTION_DOWN);
+              	case KeyEvent.KEYCODE_BUTTON_A:
+              		
+              		break;
+              	case KeyEvent.KEYCODE_BUTTON_R1:
+              		openGlStuff.buttonR1(event.getAction() == KeyEvent.ACTION_DOWN);
+              		break;
+              	case KeyEvent.KEYCODE_BUTTON_L1:
+              		openGlStuff.buttonL1(event.getAction() == KeyEvent.ACTION_DOWN);
               		break;
                 default:
                        if (CardboardOverlayView.isFireKey(keyCode)) {
@@ -297,4 +303,12 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 //      }
       return super.dispatchKeyEvent(event);
   }
+
+public CardboardOverlayView getOverlayView() {
+	return overlayView;
+}
+
+public void setOverlayView(CardboardOverlayView overlayView) {
+	this.overlayView = overlayView;
+}
 }
