@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.vrtoolkit.cardboard.samples.treasurehunt;
+package edu.washburn.vrtoolkit.cardboard.vrpaint;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
@@ -31,7 +31,8 @@ import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
-import com.google.vrtoolkit.cardboard.samples.treasurehunt.OpenGlStuff.GLSelectableObject;
+import com.google.vrtoolkit.cardboard.samples.treasurehunt.R;
+import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff.GLSelectableObject;
 
 import java.net.*;
 import java.io.*;
