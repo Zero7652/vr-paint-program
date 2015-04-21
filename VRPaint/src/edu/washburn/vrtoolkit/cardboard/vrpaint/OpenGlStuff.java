@@ -71,7 +71,9 @@ public class OpenGlStuff {
     private float[] modelViewProjection = new float[16];
     private float[] modelView = new float[16];
 
+    private boolean createNew ;
     private MainActivity main;
+    private OpenGlControl control = new OpenGlControl();
 
     public OpenGlStuff(MainActivity main) {
         this.main = main;
@@ -80,6 +82,15 @@ public class OpenGlStuff {
 
         currentNew.cubeStuff();
         currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
+    }
+
+    public void createObject(boolean createNew){
+        this.createNew = createNew;
+    }
+
+    public void moveUser(boolean move){
+        control.getMoveUser().setMoving(move);
+        control.getMoveObject().setMoving(!move);
     }
 
     public void moveCursor(double i, double j){
@@ -106,6 +117,17 @@ public class OpenGlStuff {
 
         currentNew.cubeStuff();
         currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
+    }
+
+    public void processMove(float x, float y){
+        if(control.getMoveUser().isMoving()){
+            float[] resultVector = new float[3];
+            float[] cVector = {x, 0f, -y};
+            mvMult(resultVector, headView, cVector);
+            control.processMove(x, y, resultVector);
+        } else {
+            control.processMove(x, y, null);
+        }
     }
 
 
