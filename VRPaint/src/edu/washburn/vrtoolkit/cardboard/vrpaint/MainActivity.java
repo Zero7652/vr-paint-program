@@ -290,7 +290,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             int mode;
             Log.i(OpenGlStuff.TAG, ""+keyCode);
             switch (keyCode) {
-                case 188: // -> B <-  B U T T O N
+                case 188: // -> X <-  B U T T O N
                         openGlStuff.selectMode(0);
                     break;
                 case 189: // -> A <-  B U T T O N
@@ -302,7 +302,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                             openGlStuff.drawStuff(false);
                         }
                     break;
-                case 190: // -> X <-  B U T T O N
+                case 190: // -> B <-  B U T T O N
                         processTrigger();
                     break;
                 case 191: // -> Y <-  B U T T O N
