@@ -94,9 +94,13 @@ public class OpenGlStuff {
         if(Math.abs(cubeCoords[0]+ (float)i)<15){
             cubeCoords[0]= cubeCoords[0] + (float)i;
         }
-        if(Math.abs(cubeCoords[1]+ (float)j)<15){
-            cubeCoords[1]= cubeCoords[1] + (float)j;
+        if(Math.abs(cubeCoords[1]- (float)j)<15){
+            cubeCoords[1]= cubeCoords[1] - (float)j;
         }
+    }
+    public void centerCursor(){
+        cubeCoords[0] = 0;
+        cubeCoords[1] = 0;
     }
 
     public void createObject(){
@@ -144,7 +148,7 @@ public class OpenGlStuff {
     }
 
     public int getMode(){
-        if(drawingMode<4)
+        if(drawingMode<=4)
             return drawingMode;
         else
             return drawingMode/10;
@@ -455,6 +459,9 @@ public class OpenGlStuff {
 
         Matrix.setIdentityM(cube.getModel(), 0);
         Matrix.translateM(cube.getModel(), 0, posVec[0], newY, posVec[2]);
+    }
+    public void hideObject2(GLSelectableObject cube){
+        cubes.remove(cube);
     }
 
     /**

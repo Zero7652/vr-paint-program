@@ -189,7 +189,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         GLSelectableObject cube;
         if ((cube = openGlStuff.isLookingAtObject()) != null) {
             score++;
-            overlayView.show3DToast("Found it! Look around for another one.\nScore = " + score);
+            overlayView.show3DToast("Cube Successfully Deleted.\nEterminate the Others!\nScore = " + score);
             openGlStuff.hideObject(cube);
         } else {
             overlayView.show3DToast("Look around to find the object!");
@@ -242,15 +242,17 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         // the left control stick, hat axis, or the right control stick.
         float x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_X, historyPos);
         float y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
+        openGlStuff.moveCursor(x,y);
 
-        openGlStuff.processMove(x,y);
         if (x == 0 || y == 0) {
             x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
             y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
+            //openGlStuff.moveCursor(-x,-y);
         }
         if (x == 0 || y == 0) {
             x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
             y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
+            //openGlStuff.processMove(x,y);
         }
 
     }
@@ -295,6 +297,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                         overlayView.show3DToast("No-Drawing Mode");
                     break;
                 case 189: // -> A <-  B U T T O N
+                        /* probably better to allow holding this button only when free drawing */
                         if(openGlStuff.drawing==false && openGlStuff.drawingMode!=0) {
                             openGlStuff.drawStuff(true);
                         } else {
@@ -333,6 +336,11 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 case 196: // -> Select <-  B U T T O N
                     break;
                 case 197: // -> Start <-  B U T T O N
+                    break;
+                case 198: // -> Left <-  A N A L O G U E   S T I C K
+                        openGlStuff.centerCursor();
+                    break;
+                case 199: // -> Right <-  A N A L O G U E   S T I C K
                     break;
                 default:
                     if (CardboardOverlayView.isFireKey(keyCode)) {
