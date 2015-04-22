@@ -139,7 +139,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             @Override
             public void run() {
                 try {
-                    //s=new Socket("172.18.65.29",5009);
+                    //s=new Socket("172.18.3.206",5009);
                     s=new Socket("192.168.3.2",5009);
                     in = new BufferedReader(new InputStreamReader(s.getInputStream()));
                     while(true)
@@ -197,6 +197,19 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         // Always give user feedback.
         vibrator.vibrate(50);
+    }
+
+    private void toastMode(int i){
+        if(i==0)
+            overlayView.show3DToast("No-Drawing Mode");
+        if(i==1)
+            overlayView.show3DToast("Free Draw!");
+        if(i==2)
+            overlayView.show3DToast("Straight Lines!");
+        if(i==3)
+            overlayView.show3DToast("Circles! (not yet implemented)");
+        if(i==4)
+            overlayView.show3DToast("Polygons!");
     }
 
     @Override
@@ -274,14 +287,51 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
 //          if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN) {
             int keyCode = event.getKeyCode();
-
+            int mode;
             Log.i(OpenGlStuff.TAG, ""+keyCode);
             switch (keyCode) {
-                case 189:
-                    openGlStuff.createObject(event.getAction() == KeyEvent.ACTION_DOWN);
+                case 188: // -> B <-  B U T T O N
+                        openGlStuff.selectMode(0);
                     break;
-                case 190:
-                    openGlStuff.moveUser(event.getAction() == KeyEvent.ACTION_DOWN);
+                case 189: // -> A <-  B U T T O N
+                        if(openGlStuff.drawing==false && openGlStuff.drawingMode!=0) {
+                            openGlStuff.drawStuff(true);
+                        } else {
+                            if(openGlStuff.drawing==false)
+                                overlayView.show3DToast("Nothing to Draw!");
+                            openGlStuff.drawStuff(false);
+                        }
+                    break;
+                case 190: // -> X <-  B U T T O N
+                        processTrigger();
+                    break;
+                case 191: // -> Y <-  B U T T O N
+                    break;
+                case 192: // -> TL <-  B U T T O N
+                        mode = openGlStuff.getMode();
+                        if(mode == 0)
+                            mode = 4;
+                        else
+                            mode = (mode-1)%5;
+                        toastMode(mode);
+                        openGlStuff.selectMode(mode);
+                    break;
+                case 193: // -> TR <-  B U T T O N
+                    mode = openGlStuff.getMode();
+                    if(mode == 4)
+                        mode = 0;
+                    else
+                        mode = (mode+1)%5;
+                    toastMode(mode);
+                    openGlStuff.selectMode(mode);
+                    break;
+                case 194: // -> BL <-  B U T T O N
+                    break;
+                case 195: // -> BR <-  B U T T O N
+                    break;
+                case 196: // -> Select <-  B U T T O N
+                    break;
+                case 197: // -> Start <-  B U T T O N
                     break;
                 default:
                     if (CardboardOverlayView.isFireKey(keyCode)) {

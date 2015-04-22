@@ -25,31 +25,27 @@ public class OpenGlStuff {
     private static final int NOT_DRAWING = 0;
     private static final int FREE_DRAWING = 1;
     private static final int LINE = 2;
-    private static final int LINE_END = 21;
     private static final int CIRCLE = 3;
     private static final int POLYGON = 4;
-    private static final int POLYGON_MID = 41;
-    private static final int POLYGON_END = 42;
+    private static final int LINE_END = 20;
+    private static final int POLYGON_MID = 40;
+    private static final int POLYGON_END = 41;
     public static final String TAG = "MainActivity";
 
     private static final float Z_NEAR = 0.1f;
     private static final float Z_FAR = 100.0f;
-
     private static final float CAMERA_Z = 0.01f;
     private static final float TIME_DELTA = 0.3f;
-
     private static final float YAW_LIMIT = 0.12f;
     private static final float PITCH_LIMIT = 0.12f;
-
     private static final int COORDS_PER_VERTEX = 3;
-    private float[] cubeCoords = {0f,0f,20f};
+
 
     // We keep the light always position just above the user.
     private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 2.0f, 0.0f, 1.0f };
-
     private float[] Eyes = new float[] { 0f, 0f };
-
     private final float[] lightPosInEyeSpace = new float[4];
+    private float[] cubeCoords = {0f,0f,20f};
 
     private int vertexShader;
     private int gridShader;
@@ -143,6 +139,13 @@ public class OpenGlStuff {
         }
         drawing = false;
         drawingMode = drawingModeInt;
+    }
+
+    public int getMode(){
+        if(drawingMode<4)
+            return drawingMode;
+        else
+            return drawingMode/10;
     }
 
     private void createLine(int test)
