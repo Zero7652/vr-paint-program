@@ -201,15 +201,15 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     private void toastMode(int i){
         if(i==0)
-            overlayView.show3DToast("No-Drawing Mode");
+            overlayView.show3DToast(i+" No-Drawing Mode");
         if(i==1)
-            overlayView.show3DToast("Free Draw!");
+            overlayView.show3DToast(i+" Free Draw!");
         if(i==2)
-            overlayView.show3DToast("Straight Lines!");
+            overlayView.show3DToast(i+" Straight Lines!");
         if(i==3)
-            overlayView.show3DToast("Circles! (not yet implemented)");
+            overlayView.show3DToast(i+" Circles! (not yet implemented)");
         if(i==4)
-            overlayView.show3DToast("Polygons!");
+            overlayView.show3DToast(i+" Polygons!");
     }
 
     @Override
@@ -285,13 +285,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     public boolean dispatchKeyEvent(KeyEvent event) {
         boolean handled = false;
         if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
-//          if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN) {
+          if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN) {
             int keyCode = event.getKeyCode();
             int mode;
             Log.i(OpenGlStuff.TAG, ""+keyCode);
             switch (keyCode) {
                 case 188: // -> X <-  B U T T O N
                         openGlStuff.selectMode(0);
+                        overlayView.show3DToast("No-Drawing Mode");
                     break;
                 case 189: // -> A <-  B U T T O N
                         if(openGlStuff.drawing==false && openGlStuff.drawingMode!=0) {
@@ -348,7 +349,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         if (handled) {
             return true;
         }
-//      }
+      }
         return super.dispatchKeyEvent(event);
     }
 }

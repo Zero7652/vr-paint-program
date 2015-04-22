@@ -52,6 +52,7 @@ public class OpenGlStuff {
     private int passthroughShader;
     public boolean drawing = false;
     public int drawingMode = NOT_DRAWING;
+    private int sDMode;
 
     private GLObject floor = new GLObject(0f, 20f, 0f);
     private List<GLSelectableObject> cubes = new ArrayList<GLSelectableObject>();
@@ -104,7 +105,7 @@ public class OpenGlStuff {
                         ((currentOld.getModel()[13] - currentNew.getModel()[13])*(currentOld.getModel()[13] - currentNew.getModel()[13])) +
                         ((currentOld.getModel()[14] - currentNew.getModel()[14])*(currentOld.getModel()[14] - currentNew.getModel()[14]))
         );
-        if(cubeDistance < 2) return;
+        if(cubeDistance < 1) return;
         placeObjectInfrontOfCamera(currentNew);
         currentOld = currentNew;
         cubes.add(currentOld);
@@ -132,7 +133,8 @@ public class OpenGlStuff {
     }
 
     public void selectMode(int drawingModeInt){
-        if(drawingMode==POLYGON_MID && drawingModeInt==NOT_DRAWING){
+        if(drawingMode==POLYGON_MID){
+            sDMode = drawingModeInt;
             drawingMode = POLYGON_END;
             drawing = true;
             return;
@@ -369,7 +371,8 @@ public class OpenGlStuff {
         }
         if(drawingMode==POLYGON_END && drawing==true){
             createLine(currentOlder,currentOldJR);
-            drawingMode = NOT_DRAWING;
+            drawing = false;
+            drawingMode = sDMode;
         }
 
         placeObjectInfrontOfCamera(currentNew);
