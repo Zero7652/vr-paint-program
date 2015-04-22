@@ -42,7 +42,7 @@ public class OpenGlStuff {
     private static final float PITCH_LIMIT = 0.12f;
 
     private static final int COORDS_PER_VERTEX = 3;
-    private float[] cubeCoords = {0f,0f,20f};
+    private float[] cubeCoords = {0f,0f,-20f};
 
     // We keep the light always position just above the user.
     private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 2.0f, 0.0f, 1.0f };
@@ -351,7 +351,7 @@ public class OpenGlStuff {
 					Matrix.translateM(cube.getModel(), 0, control.getMoveUser().getMoveX(), control.getMoveUser().getMoveY(), control.getMoveUser().getMoveZ());
 				}
 			}
-			if(control.getObjectTool().isActive()){
+			if(control.getObjectTool().isActive() || control.getLineTool().isActive()){
 				cubeCoords[0] += control.getObjectTool().getMoveX();
 				cubeCoords[1] += control.getObjectTool().getMoveY();
 				cubeCoords[2] += control.getObjectTool().getMoveZ();
@@ -360,6 +360,15 @@ public class OpenGlStuff {
 
 				mvMult(currentNew.getModel(), 12, headView, cubeCoords);
 				Matrix.scaleM(currentNew.getModel(), 0, control.getObjectTool().getScale(), control.getObjectTool().getScale(), control.getObjectTool().getScale());
+			} 
+			if(control.getLineTool().isActive()){
+				if(!control.getLineTool().isCreating()){
+					control.getLineTool().setCreating(true);
+		            createLine(1);
+				} else {
+					control.getLineTool().setCreating(false);
+		            createLine(2);
+				}
 			}
 		}
 		
@@ -374,9 +383,6 @@ public class OpenGlStuff {
 		}
 
 
-        if(drawing==true && drawingMode==FREE_DRAWING){
-            createObject();
-        }
         if(drawingMode==LINE && drawing==true) {
             createLine(1);
             drawing = false;
@@ -386,7 +392,6 @@ public class OpenGlStuff {
             drawing = false;
             drawingMode = LINE;
         }
-        if(drawingMode==CIRCLE);
         if(drawingMode==POLYGON && drawing==true){
             createLine(1);
             drawingMode=POLYGON_MID;
@@ -403,8 +408,6 @@ public class OpenGlStuff {
         mvMult(currentNew.getModel(),12, headView, cubeCoords);
         float[] uVector = new float[4];
         headTransform.getUpVector(uVector,0);
-        //System.out.println("Up Vector: " + uVector[0] + " || " + uVector[1] + " || " + uVector[2]);
-        //System.out.println("Head View: " + headView[4] + " || " + headView[5] + " || " + headView[6]);
 
         // Build the camera matrix and apply it to the ModelView.
         Matrix.setLookAtM(camera, 0, Eyes[0], Eyes[1], CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
@@ -660,6 +663,9 @@ public class OpenGlStuff {
 
         public GLSelectableObject(float xPos, float yPos, float zPos) {
             super(xPos, yPos, zPos);
+        }
+        public GLSelectableObject(float[] pos) {
+            super(pos[0], pos[1], pos[2]);
         }
 
         public void cubeStuff() {

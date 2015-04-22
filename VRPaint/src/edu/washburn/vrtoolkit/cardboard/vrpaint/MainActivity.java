@@ -246,13 +246,17 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 		float y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
 
 		openGlStuff.processMove(x, y);
-		if (x == 0 || y == 0) {
+		{
 			x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
 			y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
 		}
-		if (x == 0 || y == 0) {
+		{
 			x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
 			y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
+		}
+		{
+			x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RTRIGGER, historyPos);
+			y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_LTRIGGER, historyPos);
 		}
 
 	}
@@ -282,7 +286,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent event) {
-		boolean handled = false;
+		boolean handled = true;
 		if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
 			// if (event.getRepeatCount() == 0 && event.getAction() ==
 			// KeyEvent.ACTION_DOWN) {
@@ -303,13 +307,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 				openGlStuff.buttonL1(event.getAction() == KeyEvent.ACTION_DOWN);
 				break;
 			default:
+				handled = false;
 				if (CardboardOverlayView.isFireKey(keyCode)) {
 					// Update the ship object to fire lasers
 
 					Log.i(OpenGlStuff.TAG, "on SOURCE_GAMEPAD");
 
 					// processTrigger();
-					handled = true;
 				}
 				break;
 			}

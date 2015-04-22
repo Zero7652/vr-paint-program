@@ -11,14 +11,14 @@ public class OpenGlControl {
 	private boolean listChanged = true;
 	private MoveObject objectTool = new MoveObject("Now creating Objects");
 	private MoveObject moveUser = new MoveObject("Free range mode");
-	private MoveObject line = new MoveObject("Create Lines");
+	private MoveObject lineTool = new MoveObject("Create Lines");
 	private MoveObject save = new MoveObject("Save Tool \nA = save\nX = load");
 	
 	public OpenGlControl(){
 		list.add(moveUser);
 		list.get(listIndex).setActive(true);
 		list.add(objectTool);
-		list.add(line);
+		list.add(lineTool);
 		list.add(save);
 	}
 
@@ -138,5 +138,12 @@ public class OpenGlControl {
 		public void setCreating(boolean creating) {
 			this.creating = creating;
 		}
+	}
+	public MoveObject getLineTool() {
+		return lineTool;
+	}
+
+	public void setLineTool(MoveObject lineTool) {
+		this.lineTool = lineTool;
 	}
 }
