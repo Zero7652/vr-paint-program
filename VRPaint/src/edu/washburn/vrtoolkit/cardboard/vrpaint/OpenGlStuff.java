@@ -311,13 +311,17 @@ public class OpenGlStuff {
                 ((cube1[2] - cube2[2])*(cube1[2] - cube2[2]))
         );
         if(cubeDistance < 2) return;
-        float dot = cube1[0] * cube2[0] + cube1[1] * cube2[1];
-        float det = cube1[0] * cube2[1] - cube1[1] * cube2[0];
-        double angleO = Math.atan2(det,dot);
         float[] resultVector = new float[3];
         GLSelectableObject cubeNew;
 
-        double angle = angleO/2;
+        float dot = start[0] * cube1[0] + start[1] * cube1[1];
+        float det = start[0] * cube1[1] - start[1] * cube1[0];
+        double angle1 = Math.atan2(det,dot);
+        dot = start[0] * cube2[0] + start[1] * cube2[1];
+        det = start[0] * cube2[1] - start[1] * cube2[0];
+        double angle2 = Math.atan2(det,dot);
+        double angle = (angle1+angle2)/2;
+
         Log.i(OpenGlStuff.TAG, "Angle: " + angle);
         float[] mid = {(float)Math.cos(angle)*-radiusZ, (float)Math.sin(angle)*-radiusZ, 0};
         mvMult(resultVector, hVZ, mid);
@@ -360,52 +364,9 @@ public class OpenGlStuff {
         cubeNew.getModel()[14] = o[2]+ resultVector[2];
         cubes.add(cubeNew);
 
-        angle = (3*angleO)/4;
-        Log.i(OpenGlStuff.TAG, "Angle: " + angle);
-        float[] mid2 = {(float)Math.cos(angle)*-radiusZ, (float)Math.sin(angle)*-radiusZ, 0};
-        mvMult(resultVector, hVZ, mid2);
-        cubeNew = new GLSelectableObject(0,0,0);
-        cubeNew.cubeStuff();
-        cubeNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
-        cubeNew.getModel()[12] = o[0]+ resultVector[0];
-        cubeNew.getModel()[13] = o[1]+ resultVector[1];
-        cubeNew.getModel()[14] = o[2]+ resultVector[2];
-        cubes.add(cubeNew);
-
-        mid2[0] = -1*mid2[0];
-        mvMult(resultVector, hVZ, mid2);
-        cubeNew = new GLSelectableObject(0,0,0);
-        cubeNew.cubeStuff();
-        cubeNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
-        cubeNew.getModel()[12] = o[0]+ resultVector[0];
-        cubeNew.getModel()[13] = o[1]+ resultVector[1];
-        cubeNew.getModel()[14] = o[2]+ resultVector[2];
-        cubes.add(cubeNew);
-
-        mid2[0] = -1*mid2[0];
-        mid2[1] = -1*mid2[1];
-        mvMult(resultVector, hVZ, mid2);
-        cubeNew = new GLSelectableObject(0,0,0);
-        cubeNew.cubeStuff();
-        cubeNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
-        cubeNew.getModel()[12] = o[0]+ resultVector[0];
-        cubeNew.getModel()[13] = o[1]+ resultVector[1];
-        cubeNew.getModel()[14] = o[2]+ resultVector[2];
-        cubes.add(cubeNew);
-
-        mid2[0] = -1*mid2[0];
-        mvMult(resultVector, hVZ, mid2);
-        cubeNew = new GLSelectableObject(0,0,0);
-        cubeNew.cubeStuff();
-        cubeNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
-        cubeNew.getModel()[12] = o[0]+ resultVector[0];
-        cubeNew.getModel()[13] = o[1]+ resultVector[1];
-        cubeNew.getModel()[14] = o[2]+ resultVector[2];
-        cubes.add(cubeNew);
-
         createArc2(cube1,mid,start,o,hVZ, radiusZ);
-        createArc2(cube1,mid2,start,o,hVZ, radiusZ);
-        //createArc2(mid,cube2,start,o,hVZ, radiusZ);
+        //createArc2(cube1,mid2,start,o,hVZ, radiusZ);
+        createArc2(mid,cube2,start,o,hVZ, radiusZ);
     }
 
     private void placeObjectInfrontOfCamera(GLObject moveObject) {
