@@ -297,11 +297,7 @@ public class OpenGlStuff {
         float[] origin = {cube1.getModel()[12],cube1.getModel()[13],cube1.getModel()[14]};
         cubes.remove(cube1);
 
-
-        //createArc(resultVector, resultVector2, resultVector, origin);
         createArc2(cCoord, cCoord3, cCoord, origin,hView, (float)cubeDistance);
-
-        //Log.i(OpenGlStuff.TAG, "Out3: " + angle);
     }
 
     private void createArc2(float[] cube1, float[] cube2, float[] start, float[] o, float[] hVZ, float radiusZ){
@@ -365,7 +361,6 @@ public class OpenGlStuff {
         cubes.add(cubeNew);
 
         createArc2(cube1,mid,start,o,hVZ, radiusZ);
-        //createArc2(cube1,mid2,start,o,hVZ, radiusZ);
         createArc2(mid,cube2,start,o,hVZ, radiusZ);
     }
 

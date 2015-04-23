@@ -208,7 +208,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         if(i==2)
             overlayView.show3DToast(i+" Straight Lines!");
         if(i==3)
-            overlayView.show3DToast(i+" Circles! (not yet implemented)");
+            overlayView.show3DToast(i+" Circles!");
         if(i==4)
             overlayView.show3DToast(i+" Polygons!");
     }
