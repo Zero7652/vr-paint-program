@@ -139,8 +139,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             @Override
             public void run() {
                 try {
-                    //s=new Socket("172.18.3.206",5009);
-                    s=new Socket("192.168.3.2",5009);
+                    s=new Socket("172.18.3.206",5009);
+                    //s=new Socket("172.18.83.64",5009);
+                    //s=new Socket("192.168.3.2",5009);
                     in = new BufferedReader(new InputStreamReader(s.getInputStream()));
                     while(true)
                     {
@@ -163,14 +164,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             public void run() {
                 vibrator.vibrate(50);
 
-                if (line.equals("7")) openGlStuff.moveCursor(-0.5, 0.5);
-                if (line.equals("8")) openGlStuff.moveCursor(0, 0.5);
-                if (line.equals("9")) openGlStuff.moveCursor(0.5, 0.5);
-                if (line.equals("4")) openGlStuff.moveCursor(-0.5, 0);
-                if (line.equals("6")) openGlStuff.moveCursor(0.5, 0);
-                if (line.equals("1")) openGlStuff.moveCursor(-0.5, -0.5);
-                if (line.equals("2")) openGlStuff.moveCursor(0, -0.5);
-                if (line.equals("3")) openGlStuff.moveCursor(0.5, -0.5);
+                if (line.equals("7")) openGlStuff.moveCursor(-0.5, 0.5,0);
+                if (line.equals("8")) openGlStuff.moveCursor(0, 0.5,0);
+                if (line.equals("9")) openGlStuff.moveCursor(0.5, 0.5,0);
+                if (line.equals("4")) openGlStuff.moveCursor(-0.5, 0,0);
+                if (line.equals("6")) openGlStuff.moveCursor(0.5, 0,0);
+                if (line.equals("1")) openGlStuff.moveCursor(-0.5, -0.5,0);
+                if (line.equals("2")) openGlStuff.moveCursor(0, -0.5,0);
+                if (line.equals("3")) openGlStuff.moveCursor(0.5, -0.5,0);
                 if (line.equals("f")) openGlStuff.selectMode(1);
                 if (line.equals("l")) openGlStuff.selectMode(2);
                 if (line.equals("c")) openGlStuff.selectMode(3);
@@ -215,7 +216,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     @Override
     public boolean dispatchGenericMotionEvent(MotionEvent event) {
         // Check that the event came from a game controller
-        if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK ) {
+        if ((event.getSource() & InputDevice.SOURCE_UNKNOWN) == InputDevice.SOURCE_UNKNOWN ) {
 
             // Process all historical movement samples in the batch
             final int historySize = event.getHistorySize();
@@ -242,7 +243,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         // the left control stick, hat axis, or the right control stick.
         float x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_X, historyPos);
         float y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
-        openGlStuff.moveCursor(x,y);
+        openGlStuff.moveCursor(x,y,0);
 
         if (x == 0 || y == 0) {
             x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
@@ -287,10 +288,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
     public boolean dispatchKeyEvent(KeyEvent event) {
         boolean handled = false;
         if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
-          if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN) {
             int keyCode = event.getKeyCode();
             int mode;
-            Log.i(OpenGlStuff.TAG, ""+keyCode);
+            //Log.i(OpenGlStuff.TAG, ""+keyCode);
+          if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (keyCode) {
                 case 188: // -> X <-  B U T T O N
                         openGlStuff.selectMode(0);
@@ -305,9 +306,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                                 overlayView.show3DToast("Nothing to Draw!");
                             openGlStuff.drawStuff(false);
                         }
-                    break;
-                case 190: // -> B <-  B U T T O N
-                        processTrigger();
                     break;
                 case 191: // -> Y <-  B U T T O N
                     break;
@@ -329,10 +327,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                     toastMode(mode);
                     openGlStuff.selectMode(mode);
                     break;
-                case 194: // -> BL <-  B U T T O N
-                    break;
-                case 195: // -> BR <-  B U T T O N
-                    break;
                 case 196: // -> Select <-  B U T T O N
                     break;
                 case 197: // -> Start <-  B U T T O N
@@ -346,7 +340,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                     if (CardboardOverlayView.isFireKey(keyCode)) {
                         // Update the ship object to fire lasers
 
-                        Log.i(OpenGlStuff.TAG, "on SOURCE_GAMEPAD");
+                        //Log.i(OpenGlStuff.TAG, "on SOURCE_GAMEPAD");
 
 //                    	    processTrigger();
                         handled = true;
@@ -354,6 +348,24 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                     break;
             }
         }
+            switch (keyCode){
+                case 190: // -> B <-  B U T T O N
+                    Log.i(OpenGlStuff.TAG, "test " + Math.sin(Math.toRadians(45)));
+                    //processTrigger();
+                    break;
+                case 194: // -> BL <-  B U T T O N
+                    openGlStuff.moveCursor(0,0,-1);
+                    //openGlStuff.buttonX(event.getAction() == KeyEvent.ACTION_DOWN)
+                    if(KeyEvent.ACTION_DOWN == event.getAction())
+                        openGlStuff.moveCursor(0,0,-1);
+
+                    break;
+                case 195: // -> BR <-  B U T T O N
+                    if(KeyEvent.ACTION_DOWN == event.getAction())
+                        openGlStuff.moveCursor(0,0,1);
+                    //openGlStuff.buttonX(event.getAction() == KeyEvent.ACTION_DOWN)
+                    break;
+            }
         if (handled) {
             return true;
         }
