@@ -1,36 +1,69 @@
 package edu.washburn.vrtoolkit.cardboard.vrpaint;
 
-import android.util.Log;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class OpenGlControl {
 	public final static float episolon = 0.000001f;
-	private MoveObject moveObject = new MoveObject();
-	private MoveObject moveUser = new MoveObject(false);
+	private List<MoveObject> list = new ArrayList<MoveObject>();
+	private int listIndex = 0;
+	private boolean listChanged = true;
+	private MoveObject objectTool = new MoveObject("Now creating Objects");
+	private MoveObject moveUser = new MoveObject("Free range mode");
+	private MoveObject lineTool = new MoveObject("Create Lines");
+	private MoveObject save = new MoveObject("Save Tool \nA = save\nX = load");
+	
+	public OpenGlControl(){
+		list.add(moveUser);
+		list.get(listIndex).setActive(true);
+		list.add(objectTool);
+		list.add(lineTool);
+		list.add(save);
+	}
 
 	public boolean processMove(float x, float y, float [] vector){
-		if(moveUser.isMoving() && vector != null){
+		if(moveUser.isActive() && vector != null){
 			moveUser.setMoveX(vector[0]);
 			moveUser.setMoveY(vector[1]);
 			moveUser.setMoveZ(vector[2]);
 			return true;
-		} else if(moveObject.isMoving()){
-			moveObject.setMoveZ(y);
-			moveObject.setScale(1+(x/100));
+		} else if(objectTool.isActive()){
+			objectTool.setMoveZ(y);
+			objectTool.setScale(1+(x/100));
 			return true;
 		}
 		return false;
 	}
-	public MoveObject getMoveObject() {
-		return moveObject;
+	public void controlForward(){
+		setListChanged(true);
+		list.get(listIndex).setActive(false);
+		listIndex++;
+		if(listIndex >= list.size())
+			listIndex = 0;
+		list.get(listIndex).setActive(true);
+		
 	}
-
-	public void setMoveObject(MoveObject moveObject) {
-		this.moveObject = moveObject;
+	public void controlBack(){
+		setListChanged(true);
+		list.get(listIndex).setActive(false);
+		listIndex--;
+		if(listIndex < 0)
+			listIndex = list.size()-1;
+		list.get(listIndex).setActive(true);
+	}
+	public String getNewText(){
+		return list.get(listIndex).getNewText();
+	}
+	public MoveObject getObjectTool() {
+		return objectTool;
+	}
+	public void setObjectTool(MoveObject moveObject) {
+		this.objectTool = moveObject;
 	}
 
 	public boolean isNewFrameControl(){
-		return moveObject.isMoving() || moveUser.isMoving();
+		return objectTool.isActive() || moveUser.isActive();
 	}
 	public MoveObject getMoveUser() {
 		return moveUser;
@@ -39,18 +72,26 @@ public class OpenGlControl {
 	public void setMoveUser(MoveObject moveUser) {
 		this.moveUser = moveUser;
 	}
+	public boolean isListChanged() {
+		return listChanged;
+	}
+
+	public void setListChanged(boolean listChanged) {
+		this.listChanged = listChanged;
+	}
 	public class MoveObject{
-		boolean moving = true;
-		float moveX = 0;
-		float moveY = 0;
-		float moveZ = 0;
-		float scale = 1;
-		public MoveObject(){};
-		public MoveObject(boolean moving){
-			this.moving = moving;
-		}
-		public boolean isMoving(){
-			return     moving == true;
+		private String newText = null;
+		private boolean active = false;
+		private boolean creating = false;
+		private float moveX = 0;
+		private float moveY = 0;
+		private float moveZ = 0;
+		private float scale = 1;
+		public MoveObject(String text){
+			setNewText(text);
+		};
+		public boolean isActive(){
+			return     active;
 //					&&
 //					(
 //					   Math.abs(moveX) > episolon
@@ -76,8 +117,8 @@ public class OpenGlControl {
 		public void setMoveZ(float moveZ) {
 			this.moveZ = moveZ;
 		}
-		public void setMoving(boolean moving) {
-			this.moving = moving;
+		public void setActive(boolean active) {
+			this.active = active;
 		}
 		public float getScale() {
 			return scale;
@@ -85,5 +126,24 @@ public class OpenGlControl {
 		public void setScale(float scale) {
 			this.scale = scale;
 		}
+		public String getNewText() {
+			return newText;
+		}
+		public void setNewText(String newText) {
+			this.newText = newText;
+		}
+		public boolean isCreating() {
+			return creating;
+		}
+		public void setCreating(boolean creating) {
+			this.creating = creating;
+		}
+	}
+	public MoveObject getLineTool() {
+		return lineTool;
+	}
+
+	public void setLineTool(MoveObject lineTool) {
+		this.lineTool = lineTool;
 	}
 }
