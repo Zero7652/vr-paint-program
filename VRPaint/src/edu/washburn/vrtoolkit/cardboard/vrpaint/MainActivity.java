@@ -240,21 +240,26 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         // Calculate the horizontal distance to move by
         // using the input value from one of these physical controls:
-        // the left control stick, hat axis, or the right control stick.
+        // the left control stick, 
         float x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_X, historyPos);
         float y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
         openGlStuff.moveCursor(x,y,0);
 
-        if (x == 0 || y == 0) {
-            x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
-            y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
-            //openGlStuff.moveCursor(-x,-y);
-        }
-        if (x == 0 || y == 0) {
-            x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
-            y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
-            //openGlStuff.processMove(x,y);
-        }
+        // right control stick
+        x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
+        y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
+        //openGlStuff.processMove(x,y);
+
+        //dpad
+        x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
+        y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
+        //openGlStuff.moveCursor(-x,-y);
+
+        //left and right triggers
+        x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_LTRIGGER, historyPos);
+        y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RTRIGGER, historyPos);
+            
+            
 
     }
 
@@ -271,9 +276,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         // bounding the joystick axis center.
         if (range != null) {
             final float flat = range.getFlat();
-            final float value =
-                    historyPos < 0 ? event.getAxisValue(axis):
-                            event.getHistoricalAxisValue(axis, historyPos);
+            final float value = historyPos < 0 ? event.getAxisValue(axis): event.getHistoricalAxisValue(axis, historyPos);
 
             // Ignore axis values that are within the 'flat' region of the
             // joystick axis center.
@@ -286,7 +289,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        boolean handled = false;
+        boolean handled = true;
         if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
             int keyCode = event.getKeyCode();
             int mode;
@@ -337,14 +340,14 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                 case 199: // -> Right <-  A N A L O G U E   S T I C K
                     break;
                 default:
-                    if (CardboardOverlayView.isFireKey(keyCode)) {
+//                    if (CardboardOverlayView.isFireKey(keyCode)) {
                         // Update the ship object to fire lasers
 
                         //Log.i(OpenGlStuff.TAG, "on SOURCE_GAMEPAD");
 
 //                    	    processTrigger();
-                        handled = true;
-                    }
+                        handled = false;
+//                    }
                     break;
             }
         }
@@ -365,6 +368,9 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                         openGlStuff.moveCursor(0,0,1);
                     //openGlStuff.buttonX(event.getAction() == KeyEvent.ACTION_DOWN)
                     break;
+                default:
+                	handled = false;
+                	break;
             }
         if (handled) {
             return true;

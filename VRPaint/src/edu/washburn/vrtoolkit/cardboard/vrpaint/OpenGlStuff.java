@@ -69,26 +69,15 @@ public class OpenGlStuff {
     private float[] modelViewProjection = new float[16];
     private float[] modelView = new float[16];
 
-    private boolean createNew ;
     private MainActivity main;
     private OpenGlControl control = new OpenGlControl();
 
     public OpenGlStuff(MainActivity main) {
         this.main = main;
 
-        currentNew = new GLSelectableObject(cubeCoords[0], cubeCoords[1], cubeCoords[2]);
-
-        currentNew.cubeStuff();
-        currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
-    }
-
-    public void createObject(boolean createNew){
-        this.createNew = createNew;
-    }
-
-    public void moveUser(boolean move){
-        control.getMoveUser().setMoving(move);
-        control.getMoveObject().setMoving(!move);
+//        currentNew = new GLSelectableObject(cubeCoords[0], cubeCoords[1], cubeCoords[2]);
+//        currentNew.cubeStuff();
+//        currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
     }
 
     public void moveCursor(double i, double j, double k){
@@ -103,6 +92,7 @@ public class OpenGlStuff {
             System.out.println("Zcoord: " + cubeCoords[2]);
         }
     }
+
     public void centerCursor(){
         cubeCoords[0] = 0;
         cubeCoords[1] = 0;
@@ -125,7 +115,7 @@ public class OpenGlStuff {
         currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
     }
 
-    public void processMove(float x, float y){
+    public void processLeftStick(float x, float y){
         if(control.getMoveUser().isMoving()){
             float[] resultVector = new float[3];
             float[] cVector = {x, 0f, -y};
@@ -133,6 +123,39 @@ public class OpenGlStuff {
             control.processMove(x, y, resultVector);
         } else {
             control.processMove(x, y, null);
+        }
+    }
+
+    public void processRightStick(float x, float y){
+        if(control.getMoveUser().isMoving()){
+            float[] resultVector = new float[3];
+            float[] cVector = {x, 0f, -y};
+            mvMult(resultVector, headView, cVector);
+            control.processMove(x, y, resultVector);
+        } else {
+            control.processMove(x, y, null);
+        }
+    }
+
+    public void processDpad(float x, float y){
+        if(control.getMoveUser().isMoving()){
+            float[] resultVector = new float[3];
+            float[] cVector = {x, 0f, -y};
+            mvMult(resultVector, headView, cVector);
+            control.processMove(x, y, resultVector);
+        } else {
+            control.processMove(x, y, null);
+        }
+    }
+
+    public void processTriggers(float l, float r){
+        if(control.getMoveUser().isMoving()){
+            float[] resultVector = new float[3];
+            float[] cVector = {l, 0f, -r};
+            mvMult(resultVector, headView, cVector);
+            control.processMove(l, r, resultVector);
+        } else {
+            control.processMove(l, r, null);
         }
     }
 
