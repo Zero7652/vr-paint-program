@@ -43,94 +43,94 @@ import android.app.Activity;
  */
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer {
 
-  private int score = 0;
+    private int score = 0;
 
-  private Vibrator vibrator;
-  private CardboardOverlayView overlayView;
-  private OpenGlStuff openGlStuff;
-  private Socket s;
-  private BufferedReader in;
+    private Vibrator vibrator;
+    private CardboardOverlayView overlayView;
+    private OpenGlStuff openGlStuff;
+    private Socket s;
+    private BufferedReader in;
     private String line;
 
-  /**
-   * Sets the view to our CardboardView and initializes the transformation matrices we will use
-   * to render our scene.
-   */
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    openGlStuff = new OpenGlStuff(this);
+    /**
+     * Sets the view to our CardboardView and initializes the transformation matrices we will use
+     * to render our scene.
+     */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        openGlStuff = new OpenGlStuff(this);
 
-    setContentView(R.layout.common_ui);
-    CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
-    cardboardView.setRenderer(this);
-    setCardboardView(cardboardView);
+        setContentView(R.layout.common_ui);
+        CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
+        cardboardView.setRenderer(this);
+        setCardboardView(cardboardView);
 
-    vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
 
-    overlayView = (CardboardOverlayView) findViewById(R.id.overlay);
-    overlayView.show3DToast("Pull the magnet when you find an object.");
-      runThread();
-      //controllerThread(MainActivity.this);
-  }
+        overlayView = (CardboardOverlayView) findViewById(R.id.overlay);
+        overlayView.show3DToast("Pull the magnet when you find an object.");
+        runThread();
+        //controllerThread(MainActivity.this);
+    }
 
-  @Override
-  public void onRendererShutdown() {
-    Log.i(OpenGlStuff.TAG, "onRendererShutdown");
-  }
+    @Override
+    public void onRendererShutdown() {
+        Log.i(OpenGlStuff.TAG, "onRendererShutdown");
+    }
 
-  @Override
-  public void onSurfaceChanged(int width, int height) {
-    Log.i(OpenGlStuff.TAG, "onSurfaceChanged");
-  }
+    @Override
+    public void onSurfaceChanged(int width, int height) {
+        Log.i(OpenGlStuff.TAG, "onSurfaceChanged");
+    }
 
-  /**
-   * Creates the buffers we use to store information about the 3D world.
-   *
-   * <p>OpenGL doesn't use Java arrays, but rather needs data in a format it can understand.
-   * Hence we use ByteBuffers.
-   *
-   * @param config The EGL configuration used when creating the surface.
-   */
-  @Override
-  public void onSurfaceCreated(EGLConfig config) {
-    Log.i(OpenGlStuff.TAG, "onSurfaceCreated");
-    openGlStuff.onSurfaceCreated(config);
-  }
+    /**
+     * Creates the buffers we use to store information about the 3D world.
+     *
+     * <p>OpenGL doesn't use Java arrays, but rather needs data in a format it can understand.
+     * Hence we use ByteBuffers.
+     *
+     * @param config The EGL configuration used when creating the surface.
+     */
+    @Override
+    public void onSurfaceCreated(EGLConfig config) {
+        Log.i(OpenGlStuff.TAG, "onSurfaceCreated");
+        openGlStuff.onSurfaceCreated(config);
+    }
 
-  /**
-   * Prepares OpenGL ES before we draw a frame.
-   *
-   * @param headTransform The head transformation in the new frame.
-   */
-  @Override
-  public void onNewFrame(HeadTransform headTransform) {
-    openGlStuff.onNewFrame(headTransform);
-  }
+    /**
+     * Prepares OpenGL ES before we draw a frame.
+     *
+     * @param headTransform The head transformation in the new frame.
+     */
+    @Override
+    public void onNewFrame(HeadTransform headTransform) {
+        openGlStuff.onNewFrame(headTransform);
+    }
 
-  /**
-   * Draws a frame for an eye.
-   *
-   * @param eye The eye to render. Includes all required transformations.
-   */
-  @Override
-  public void onDrawEye(Eye eye) {
-    openGlStuff.onDrawEye(eye);
-   }
+    /**
+     * Draws a frame for an eye.
+     *
+     * @param eye The eye to render. Includes all required transformations.
+     */
+    @Override
+    public void onDrawEye(Eye eye) {
+        openGlStuff.onDrawEye(eye);
+    }
 
-  @Override
-  public void onFinishFrame(Viewport viewport) {
-  }
+    @Override
+    public void onFinishFrame(Viewport viewport) {
+    }
 
-  /**
-   * Called when the Cardboard trigger is pulled.
-   */
-  @Override
-  public void onCardboardTrigger() {
-    Log.i(OpenGlStuff.TAG, "onCardboardTrigger");
-    processTrigger();
-  }
+    /**
+     * Called when the Cardboard trigger is pulled.
+     */
+    @Override
+    public void onCardboardTrigger() {
+        Log.i(OpenGlStuff.TAG, "onCardboardTrigger");
+        processTrigger();
+    }
 
     /////////////N E T W O R K  /////////////S O C K E T ////////////C O D E Z Z Z Z
     public void runThread()
@@ -139,7 +139,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             @Override
             public void run() {
                 try {
-                    s=new Socket("172.18.3.206",5009);
+                    //s=new Socket("172.18.3.206",5009);
                     //s=new Socket("172.18.83.64",5009);
                     //s=new Socket("192.168.3.2",5009);
                     in = new BufferedReader(new InputStreamReader(s.getInputStream()));
@@ -202,15 +202,15 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
     private void toastMode(int i){
         if(i==0)
-            overlayView.show3DToast(i+" No-Drawing Mode");
+            overlayView.show3DToast("No-Drawing Mode");
         if(i==1)
-            overlayView.show3DToast(i+" Free Draw!");
+            overlayView.show3DToast("Free Draw!");
         if(i==2)
-            overlayView.show3DToast(i+" Straight Lines!");
+            overlayView.show3DToast("Straight Lines!");
         if(i==3)
-            overlayView.show3DToast(i+" Circles!");
+            overlayView.show3DToast("Circles!");
         if(i==4)
-            overlayView.show3DToast(i+" Polygons!");
+            overlayView.show3DToast("Polygons!");
     }
 
     @Override
@@ -241,20 +241,17 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
         // Calculate the horizontal distance to move by
         // using the input value from one of these physical controls:
         // the left control stick, hat axis, or the right control stick.
-        float x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_X, historyPos);
-        float y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
-        openGlStuff.moveCursor(x,y,0);
+        float x1 = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_X, historyPos);
+        float z1 = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
+        openGlStuff.moveUser(x1,0,z1);
 
-        if (x == 0 || y == 0) {
-            x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
-            y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
-            //openGlStuff.moveCursor(-x,-y);
-        }
-        if (x == 0 || y == 0) {
-            x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
-            y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
-            //openGlStuff.processMove(x,y);
-        }
+        float x3 = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
+        float y3 = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
+        openGlStuff.moveUser(x3,y3,0);
+
+        float x2 = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
+        float y2 = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
+        openGlStuff.moveCursor(x2,y2,0);
 
     }
 
@@ -291,13 +288,13 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             int keyCode = event.getKeyCode();
             int mode;
             //Log.i(OpenGlStuff.TAG, ""+keyCode);
-          if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN) {
-            switch (keyCode) {
-                case 188: // -> X <-  B U T T O N
+            if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN) {
+                switch (keyCode) {
+                    case 188: // -> X <-  B U T T O N
                         openGlStuff.selectMode(0);
                         overlayView.show3DToast("No-Drawing Mode");
-                    break;
-                case 189: // -> A <-  B U T T O N
+                        break;
+                    case 189: // -> A <-  B U T T O N
                         /* probably better to allow holding this button only when free drawing */
                         if(openGlStuff.drawing==false && openGlStuff.drawingMode!=0) {
                             openGlStuff.drawStuff(true);
@@ -306,10 +303,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                                 overlayView.show3DToast("Nothing to Draw!");
                             openGlStuff.drawStuff(false);
                         }
-                    break;
-                case 191: // -> Y <-  B U T T O N
-                    break;
-                case 192: // -> TL <-  B U T T O N
+                        break;
+                    case 191: // -> Y <-  B U T T O N
+                        break;
+                    case 192: // -> TL <-  B U T T O N
                         mode = openGlStuff.getMode();
                         if(mode == 0)
                             mode = 4;
@@ -317,37 +314,37 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                             mode = (mode-1)%5;
                         toastMode(mode);
                         openGlStuff.selectMode(mode);
-                    break;
-                case 193: // -> TR <-  B U T T O N
-                    mode = openGlStuff.getMode();
-                    if(mode == 4)
-                        mode = 0;
-                    else
-                        mode = (mode+1)%5;
-                    toastMode(mode);
-                    openGlStuff.selectMode(mode);
-                    break;
-                case 196: // -> Select <-  B U T T O N
-                    break;
-                case 197: // -> Start <-  B U T T O N
-                    break;
-                case 198: // -> Left <-  A N A L O G U E   S T I C K
+                        break;
+                    case 193: // -> TR <-  B U T T O N
+                        mode = openGlStuff.getMode();
+                        if(mode == 4)
+                            mode = 0;
+                        else
+                            mode = (mode+1)%5;
+                        toastMode(mode);
+                        openGlStuff.selectMode(mode);
+                        break;
+                    case 196: // -> Select <-  B U T T O N
+                        break;
+                    case 197: // -> Start <-  B U T T O N
+                        break;
+                    case 198: // -> Left <-  A N A L O G U E   S T I C K
                         openGlStuff.centerCursor();
-                    break;
-                case 199: // -> Right <-  A N A L O G U E   S T I C K
-                    break;
-                default:
-                    if (CardboardOverlayView.isFireKey(keyCode)) {
-                        // Update the ship object to fire lasers
+                        break;
+                    case 199: // -> Right <-  A N A L O G U E   S T I C K
+                        break;
+                    default:
+                        if (CardboardOverlayView.isFireKey(keyCode)) {
+                            // Update the ship object to fire lasers
 
-                        //Log.i(OpenGlStuff.TAG, "on SOURCE_GAMEPAD");
+                            //Log.i(OpenGlStuff.TAG, "on SOURCE_GAMEPAD");
 
 //                    	    processTrigger();
-                        handled = true;
-                    }
-                    break;
+                            handled = true;
+                        }
+                        break;
+                }
             }
-        }
             switch (keyCode){
                 case 190: // -> B <-  B U T T O N
                     Log.i(OpenGlStuff.TAG, "test " + Math.sin(Math.toRadians(45)));
@@ -366,10 +363,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                     //openGlStuff.buttonX(event.getAction() == KeyEvent.ACTION_DOWN)
                     break;
             }
-        if (handled) {
-            return true;
+            if (handled) {
+                return true;
+            }
         }
-      }
         return super.dispatchKeyEvent(event);
     }
 }
