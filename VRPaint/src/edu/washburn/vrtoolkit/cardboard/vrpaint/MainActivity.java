@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-package edu.washburn.vrtoolkit.cardboard.vrpaint;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.Socket;
+package com.google.vrtoolkit.cardboard.samples.treasurehunt;
 
 import javax.microedition.khronos.egl.EGLConfig;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -36,9 +31,11 @@ import com.google.vrtoolkit.cardboard.CardboardView;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.Viewport;
-import com.google.vrtoolkit.cardboard.samples.treasurehunt.R;
+import com.google.vrtoolkit.cardboard.samples.treasurehunt.OpenGlStuff.GLSelectableObject;
 
-import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff.GLSelectableObject;
+import java.net.*;
+import java.io.*;
+import android.app.Activity;
 
 /**
  * A Cardboard sample application.
@@ -141,6 +138,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             @Override
             public void run() {
                 try {
+                    //s=new Socket("172.18.65.29",5009);
                     s=new Socket("192.168.3.2",5009);
                     in = new BufferedReader(new InputStreamReader(s.getInputStream()));
                     while(true)
@@ -164,18 +162,23 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
             public void run() {
                 vibrator.vibrate(50);
 
-                if (line.equals("7")) openGlStuff.processMove(-0.5f, 0.5f);
-                if (line.equals("8")) openGlStuff.processMove(0f, 0.5f);
-                if (line.equals("9")) openGlStuff.processMove(0.5f, 0.5f);
-                if (line.equals("4")) openGlStuff.processMove(-0.5f, 0f);
-                if (line.equals("6")) openGlStuff.processMove(0.5f, 0f);
-                if (line.equals("1")) openGlStuff.processMove(-0.5f, -0.5f);
-                if (line.equals("2")) openGlStuff.processMove(0f, -0.5f);
-                if (line.equals("3")) openGlStuff.processMove(0.5f, -0.5f);
-                if (line.equals("5") && (openGlStuff.drawing == false)) {
-                    openGlStuff.drawing = true;
+                if (line.equals("7")) openGlStuff.moveCursor(-0.5, 0.5);
+                if (line.equals("8")) openGlStuff.moveCursor(0, 0.5);
+                if (line.equals("9")) openGlStuff.moveCursor(0.5, 0.5);
+                if (line.equals("4")) openGlStuff.moveCursor(-0.5, 0);
+                if (line.equals("6")) openGlStuff.moveCursor(0.5, 0);
+                if (line.equals("1")) openGlStuff.moveCursor(-0.5, -0.5);
+                if (line.equals("2")) openGlStuff.moveCursor(0, -0.5);
+                if (line.equals("3")) openGlStuff.moveCursor(0.5, -0.5);
+                if (line.equals("f")) openGlStuff.selectMode(1);
+                if (line.equals("l")) openGlStuff.selectMode(2);
+                if (line.equals("c")) openGlStuff.selectMode(3);
+                if (line.equals("p")) openGlStuff.selectMode(4);
+                if (line.equals("e")) openGlStuff.selectMode(0);
+                if (line.equals("5")&&openGlStuff.drawing==false) {
+                    openGlStuff.drawStuff(true);
                 } else {
-                    openGlStuff.drawing = false;
+                    openGlStuff.drawStuff(false);
                 }
             }
         });
@@ -198,7 +201,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
   @Override
   public boolean dispatchGenericMotionEvent(MotionEvent event) {
 	// Check that the event came from a game controller
-      if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK ) {
+      if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.getAction() == MotionEvent.ACTION_MOVE) {
 
           // Process all historical movement samples in the batch
           final int historySize = event.getHistorySize();
@@ -224,24 +227,28 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 	    // using the input value from one of these physical controls:
 	    // the left control stick, hat axis, or the right control stick.
 	    float x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_X, historyPos);
-	    float y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
-
-        openGlStuff.processMove(x,y);
-	    if (x == 0 || y == 0) {
+	    if (x == 0) {
 	        x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
+	    }
+	    if (x == 0) {
+	        x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
+	    }
+
+	    // Calculate the vertical distance to move by
+	    // using the input value from one of these physical controls:
+	    // the left control stick, hat switch, or the right control stick.
+	    float y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
+	    if (y == 0) {
 	        y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
 	    }
-	    if (x == 0 || y == 0) {
-	        x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
+	    if (y == 0) {
 	        y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
 	    }
 
+	    // Update the ship object based on the new x and y values
+//	    Eyes[0] += x;
+//	    Eyes[1] += y;
 	}
-  
-  
-//  jason kopecky
-//  american family insurance 
-//  po box 2570 meryland heights mo 63043
   
   private static float getCenteredAxis(MotionEvent event, InputDevice device, int axis, int historyPos) {
 	    final InputDevice.MotionRange range = device.getMotionRange(axis, event.getSource());
@@ -268,24 +275,19 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
   public boolean dispatchKeyEvent(KeyEvent event) {
 	  boolean handled = false;
       if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
-//          if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN) {
+          if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN) {
         	  int keyCode = event.getKeyCode();
-
-      	    Log.i(OpenGlStuff.TAG, ""+keyCode);
               switch (keyCode) {
-              	case 189:
-            	  openGlStuff.createObject(event.getAction() == KeyEvent.ACTION_DOWN);
-            	  break;
-              	case 190:
-              		openGlStuff.moveUser(event.getAction() == KeyEvent.ACTION_DOWN);
-              		break;
-                default:
+                  // Handle gamepad and D-pad button presses to
+                  // navigate the ship
+
+                  default:
                        if (CardboardOverlayView.isFireKey(keyCode)) {
                            // Update the ship object to fire lasers
 
                     	    Log.i(OpenGlStuff.TAG, "on SOURCE_GAMEPAD");
 
-//                    	    processTrigger();
+                    	    processTrigger();
                            handled = true;
                        }
                    break;
@@ -294,7 +296,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
           if (handled) {
               return true;
           }
-//      }
+      }
       return super.dispatchKeyEvent(event);
   }
 }
