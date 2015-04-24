@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2014 Google Inc. All Rights Reserved.
 
@@ -247,7 +248,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
         float x3 = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
         float y3 = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
-        openGlStuff.moveUser(x3,y3,0);
+        openGlStuff.moveUser(x3,-y3,0);
 
         float x2 = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
         float y2 = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
@@ -329,9 +330,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
                     case 197: // -> Start <-  B U T T O N
                         break;
                     case 198: // -> Left <-  A N A L O G U E   S T I C K
-                        openGlStuff.centerCursor();
+                        openGlStuff.centerUser();
                         break;
                     case 199: // -> Right <-  A N A L O G U E   S T I C K
+                        openGlStuff.centerCursor();
                         break;
                     default:
                         if (CardboardOverlayView.isFireKey(keyCode)) {
@@ -339,7 +341,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
                             //Log.i(OpenGlStuff.TAG, "on SOURCE_GAMEPAD");
 
-//                    	    processTrigger();
+//                          processTrigger();
                             handled = true;
                         }
                         break;

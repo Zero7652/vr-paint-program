@@ -88,23 +88,29 @@ public class OpenGlStuff {
         this.createNew = createNew;
     }
 
-    public void moveUser(boolean move){
-        control.getMoveUser().setMoving(move);
-        control.getMoveObject().setMoving(!move);
+    public void moveUser(float xZ, float yZ, float zZ){
+        float[] resultVector = {xZ,yZ,zZ};
+        mvMult(resultVector,headView,resultVector);
+        centerZ[0] = centerZ[0] + resultVector[0];
+        centerZ[1] = centerZ[1] + resultVector[1];
+        centerZ[2] = centerZ[2] + resultVector[2];
+        lookingZ[0] = lookingZ[0] + resultVector[0];
+        lookingZ[1] = lookingZ[1] + resultVector[1];
+        lookingZ[2] = lookingZ[2] + resultVector[2];
+        //cubeCoords[0] = cubeCoords[0] + x;
+        //cubeCoords[1] = cubeCoords[1] + y;
+        //cubeCoords[2] = cubeCoords[2] + z;
+        placeObjectInfrontOfCamera(currentNew);
+        //System.out.println("Coord: " + headView[0] + " || " + headView[1] + " || " + headView[2] + " || " + headView[3]);
     }
 
-    public void moveUser(float x, float y, float z){
-        centerZ[0] = centerZ[0] + x;
-        centerZ[1] = centerZ[1] + y;
-        centerZ[2] = centerZ[2] + z;
-        lookingZ[0] = lookingZ[0] + x;
-        lookingZ[1] = lookingZ[1] + y;
-        lookingZ[2] = lookingZ[2] + z;
-        cubeCoords[0] = cubeCoords[0] + x;
-        cubeCoords[1] = cubeCoords[1] + y;
-        cubeCoords[2] = cubeCoords[2] + z;
-        placeObjectInfrontOfCamera(currentNew);
-        System.out.println("Coord: " + headView[0] + " || " + headView[1] + " || " + headView[2] + " || " + headView[3]);
+    public void centerUser(){
+        centerZ[0] = 0.0f;
+        centerZ[1] = 0.0f;
+        centerZ[2] = 0.0f;
+        lookingZ[0] = 0.0f;
+        lookingZ[1] = 0.0f;
+        lookingZ[2] = 0.1f;
     }
 
     public void moveCursor(double i, double j, double k){
@@ -139,17 +145,6 @@ public class OpenGlStuff {
 
         currentNew.cubeStuff();
         currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
-    }
-
-    public void processMove(float x, float y){
-        if(control.getMoveUser().isMoving()){
-            float[] resultVector = new float[3];
-            float[] cVector = {x, 0f, -y};
-            mvMult(resultVector, headView, cVector);
-            control.processMove(x, y, resultVector);
-        } else {
-            control.processMove(x, y, null);
-        }
     }
 
 
