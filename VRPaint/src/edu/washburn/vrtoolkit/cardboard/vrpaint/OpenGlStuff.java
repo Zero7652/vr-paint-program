@@ -68,6 +68,8 @@ public class OpenGlStuff {
     private float[] headView = new float[16];
     private float[] modelViewProjection = new float[16];
     private float[] modelView = new float[16];
+    private float[] centerZ = {0,0,0};
+    private float[] lookingZ = {Eyes[0],Eyes[1],CAMERA_Z};
 
     private boolean createNew ;
     private MainActivity main;
@@ -91,6 +93,20 @@ public class OpenGlStuff {
         control.getMoveObject().setMoving(!move);
     }
 
+    public void moveUser(float x, float y, float z){
+        centerZ[0] = centerZ[0] + x;
+        centerZ[1] = centerZ[1] + y;
+        centerZ[2] = centerZ[2] + z;
+        lookingZ[0] = lookingZ[0] + x;
+        lookingZ[1] = lookingZ[1] + y;
+        lookingZ[2] = lookingZ[2] + z;
+        cubeCoords[0] = cubeCoords[0] + x;
+        cubeCoords[1] = cubeCoords[1] + y;
+        cubeCoords[2] = cubeCoords[2] + z;
+        placeObjectInfrontOfCamera(currentNew);
+        System.out.println("Coord: " + headView[0] + " || " + headView[1] + " || " + headView[2] + " || " + headView[3]);
+    }
+
     public void moveCursor(double i, double j, double k){
         if(Math.abs(cubeCoords[0]+ (float)i)<15){
             cubeCoords[0]= cubeCoords[0] + (float)i;
@@ -100,7 +116,7 @@ public class OpenGlStuff {
         }
         if(((cubeCoords[2]+(float)k)<=80)||((cubeCoords[2]-(float)k)<=0)){
             cubeCoords[2] = cubeCoords[2] + (float)k;
-            System.out.println("Zcoord: " + cubeCoords[2]);
+            //System.out.println("Zcoord: " + cubeCoords[2]);
         }
     }
     public void centerCursor(){
@@ -111,8 +127,8 @@ public class OpenGlStuff {
     public void createObject(){
         double cubeDistance = Math.sqrt(
                 ((currentOld.getModel()[12] - currentNew.getModel()[12])*(currentOld.getModel()[12] - currentNew.getModel()[12])) +
-                ((currentOld.getModel()[13] - currentNew.getModel()[13])*(currentOld.getModel()[13] - currentNew.getModel()[13])) +
-                ((currentOld.getModel()[14] - currentNew.getModel()[14])*(currentOld.getModel()[14] - currentNew.getModel()[14]))
+                        ((currentOld.getModel()[13] - currentNew.getModel()[13])*(currentOld.getModel()[13] - currentNew.getModel()[13])) +
+                        ((currentOld.getModel()[14] - currentNew.getModel()[14])*(currentOld.getModel()[14] - currentNew.getModel()[14]))
         );
         if(cubeDistance < 1) return;
         placeObjectInfrontOfCamera(currentNew);
@@ -250,8 +266,8 @@ public class OpenGlStuff {
         };
         double cubeDistance = Math.sqrt(
                 (circleVector[0]*circleVector[0]) +
-                (circleVector[1]*circleVector[1]) +
-                (circleVector[2]*circleVector[2])
+                        (circleVector[1]*circleVector[1]) +
+                        (circleVector[2]*circleVector[2])
         );
         if(cubeDistance<0.7) return;
 
@@ -303,8 +319,8 @@ public class OpenGlStuff {
     private void createArc2(float[] cube1, float[] cube2, float[] start, float[] o, float[] hVZ, float radiusZ){
         double cubeDistance = Math.sqrt(
                 ((cube1[0] - cube2[0])*(cube1[0] - cube2[0])) +
-                ((cube1[1] - cube2[1])*(cube1[1] - cube2[1])) +
-                ((cube1[2] - cube2[2])*(cube1[2] - cube2[2]))
+                        ((cube1[1] - cube2[1])*(cube1[1] - cube2[1])) +
+                        ((cube1[2] - cube2[2])*(cube1[2] - cube2[2]))
         );
         if(cubeDistance < 2) return;
         float[] resultVector = new float[3];
@@ -552,7 +568,8 @@ public class OpenGlStuff {
         //System.out.println("Head View: " + headView[4] + " || " + headView[5] + " || " + headView[6]);
 
         // Build the camera matrix and apply it to the ModelView.
-        Matrix.setLookAtM(camera, 0, Eyes[0], Eyes[1], CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        Matrix.setLookAtM(camera, 0, lookingZ[0], lookingZ[1], lookingZ[2], centerZ[0], centerZ[1], centerZ[2], 0.0f, 1.0f, 0.0f);
+        //Log.i("camera", "Camera" + camera[12] + " || " + camera[13] + " || " + camera[14] + " || " + camera[15] + " || ");
 
         checkGLError("onReadyToDraw");
     }
