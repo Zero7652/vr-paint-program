@@ -1,6 +1,5 @@
 package edu.washburn.vrtoolkit.cardboard.vrpaint;
 
-import android.util.Log;
 
 
 public class OpenGlControl {

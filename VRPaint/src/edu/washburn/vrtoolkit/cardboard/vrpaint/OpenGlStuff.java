@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -52,6 +51,8 @@ public class OpenGlStuff {
     private int gridShader;
     private int passthroughShader;
     public boolean drawing = false;
+    public boolean l2Pressed= false;
+    public boolean r2Pressed = false;
     public int drawingMode = NOT_DRAWING;
     private int sDMode;
 
@@ -74,23 +75,9 @@ public class OpenGlStuff {
 
     public OpenGlStuff(MainActivity main) {
         this.main = main;
-
 //        currentNew = new GLSelectableObject(cubeCoords[0], cubeCoords[1], cubeCoords[2]);
 //        currentNew.cubeStuff();
 //        currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
-    }
-
-    public void moveCursor(double i, double j, double k){
-        if(Math.abs(cubeCoords[0]+ (float)i)<15){
-            cubeCoords[0]= cubeCoords[0] + (float)i;
-        }
-        if(Math.abs(cubeCoords[1]- (float)j)<15){
-            cubeCoords[1]= cubeCoords[1] - (float)j;
-        }
-        if(((cubeCoords[2]+(float)k)<=80)||((cubeCoords[2]-(float)k)<=0)){
-            cubeCoords[2] = cubeCoords[2] + (float)k;
-            System.out.println("Zcoord: " + cubeCoords[2]);
-        }
     }
 
     public void centerCursor(){
@@ -115,14 +102,68 @@ public class OpenGlStuff {
         currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
     }
 
+    public void processButtonStart(boolean pressed){
+    }
+
+    public void processButtonSelect(boolean pressed){
+    }
+
+    public void processButtonX(boolean pressed){
+        selectMode(0);
+        main.getOverlayView().show3DToast("No-Drawing Mode");
+    }
+
+    public void processButtonY(boolean pressed){
+    }
+
+    public void processButtonA(boolean pressed){
+    	 if(drawing==false && drawingMode!=0) {
+             drawStuff(true);
+         } else {
+             if(drawing==false)
+                 main.getOverlayView().show3DToast("Nothing to Draw!");
+             drawStuff(false);
+         }
+    }
+
+    public void processButtonB(boolean pressed){
+    }
+
+    public void processButtonR1(boolean pressed){
+    	if(pressed){
+	        drawingMode = (drawingMode+1)%5;
+	        toastMode(drawingMode);
+    	}
+    }
+
+    public void processButtonL1(boolean pressed){
+    	if(pressed){
+        	drawingMode = (drawingMode+4)%5;
+	        toastMode(drawingMode);
+    	}
+    }
+
+    public void processButtonR2(boolean pressed){
+    	r2Pressed = pressed;
+    }
+
+    public void processButtonL2(boolean pressed){
+    	l2Pressed = pressed;
+    }
+
+    public void processButtonR3(boolean pressed){
+    }
+
+    public void processButtonL3(boolean pressed){
+    	centerCursor();
+    }
+
     public void processLeftStick(float x, float y){
-        if(control.getMoveUser().isMoving()){
-            float[] resultVector = new float[3];
-            float[] cVector = {x, 0f, -y};
-            mvMult(resultVector, headView, cVector);
-            control.processMove(x, y, resultVector);
-        } else {
-            control.processMove(x, y, null);
+        if(Math.abs(cubeCoords[0]+ x)<15){
+            cubeCoords[0]= cubeCoords[0] + x;
+        }
+        if(Math.abs(cubeCoords[1]- y)<15){
+            cubeCoords[1]= cubeCoords[1] - y;
         }
     }
 
@@ -157,6 +198,31 @@ public class OpenGlStuff {
         } else {
             control.processMove(l, r, null);
         }
+    }
+
+    private void toastMode(int i){
+    	String toastString;
+    	switch(i){
+    	case 0:
+    		toastString = i+" No-Drawing Mode";
+    		break;
+    	case 1:
+    		toastString = i+" Free Draw!";
+    		break;
+    	case 2:
+    		toastString = i+" Straight Lines!";
+    		break;
+    	case 3:
+    		toastString = i+" Circles!";
+    		break;
+    	case 4:
+    		toastString = i+" Polygons!";
+    		break;
+    	default:
+    		toastString = i+" error occured";
+    		break;
+    	}
+        main.getOverlayView().show3DToast(toastString);
     }
 
 
@@ -532,6 +598,17 @@ public class OpenGlStuff {
 
     public void onNewFrame(HeadTransform headTransform) {
         headTransform.getHeadView(headView, 0);
+
+        if(l2Pressed){
+            if(((cubeCoords[2]-1)<=80)||((cubeCoords[2]+1)<=0)){
+                cubeCoords[2] = cubeCoords[2] - 1;
+            }
+        }
+        if(r2Pressed){
+        	if(((cubeCoords[2]+1)<=80)||((cubeCoords[2]-1)<=0)){
+                cubeCoords[2] = cubeCoords[2] + 1;
+            }
+        }
 
         if(drawing==true && drawingMode==FREE_DRAWING){
             createObject();
