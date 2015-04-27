@@ -20,24 +20,26 @@ import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.samples.treasurehunt.R;
 
+import edu.washburn.vrtoolkit.cardboard.vrpaint.tools.OpenGlControl;
+import edu.washburn.vrtoolkit.cardboard.vrpaint.tools.OpenGlControl.Tools;
+
 public class OpenGlStuff {
     private static final int NOT_DRAWING = 0;
-    private static final int FREE_DRAWING = 1;
     private static final int LINE = 2;
     private static final int CIRCLE = 3;
     private static final int CIRCLE_END = 31;
     private static final int POLYGON = 4;
-    private static final int LINE_END = 20;
-    private static final int POLYGON_MID = 40;
+    public static final int LINE_END = 20;
+    public static final int POLYGON_MID = 40;
     private static final int POLYGON_END = 41;
     public static final String TAG = "MainActivity";
 
-    private static final float Z_NEAR = 0.1f;
-    private static final float Z_FAR = 100.0f;
+    public static final float Z_NEAR = 0.1f;
+    public static final float Z_FAR = 100.0f;
     private static final float CAMERA_Z = 0.01f;
     private static final float TIME_DELTA = 0.3f;
-    private static final float YAW_LIMIT = 0.12f;
-    private static final float PITCH_LIMIT = 0.12f;
+    private static final float YAW_LIMIT = 0.05f;
+    private static final float PITCH_LIMIT = 0.05f;
     private static final int COORDS_PER_VERTEX = 3;
 
 
@@ -45,116 +47,109 @@ public class OpenGlStuff {
     private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 2.0f, 0.0f, 1.0f };
     private float[] Eyes = new float[] { 0f, 0f };
     private final float[] lightPosInEyeSpace = new float[4];
-    private float[] cubeCoords = {0f,0f,20f};
+    public float[] cubeCoords = {0f,0f,-20f};
 
-    private int vertexShader;
-    private int gridShader;
-    private int passthroughShader;
+    public int vertexShader;
+    public int gridShader;
+    public int passthroughShader;
     public boolean drawing = false;
     public boolean l2Pressed= false;
     public boolean r2Pressed = false;
     public int drawingMode = NOT_DRAWING;
+    public Tools currentTool = Tools.NOT_DRAWING;
     private int sDMode;
 
     private GLObject floor = new GLObject(0f, 20f, 0f);
-    private List<GLSelectableObject> cubes = new ArrayList<GLSelectableObject>();
-    private GLSelectableObject currentNew = new GLSelectableObject(cubeCoords[0], cubeCoords[1], cubeCoords[2]);
+    public List<GLSelectableObject> cubes = new ArrayList<GLSelectableObject>();
+    public GLSelectableObject currentNew = new GLSelectableObject(cubeCoords);
 
-    GLSelectableObject currentOlder = new GLSelectableObject(0,0,0);
-    GLSelectableObject currentOld = new GLSelectableObject(0,0,0);
-    GLSelectableObject currentOldJR;
+    public GLSelectableObject currentOlder = new GLSelectableObject(0,0,0);
+    public GLSelectableObject currentOld = new GLSelectableObject(0,0,0);
+    public GLSelectableObject currentOldJR;
 
-    private float[] camera = new float[16];
-    private float[] view = new float[16];
-    private float[] headView = new float[16];
-    private float[] modelViewProjection = new float[16];
-    private float[] modelView = new float[16];
+    public float[] camera = new float[16];
+    public float[] view = new float[16];
+    public float[] headView = new float[16];
+    public float[] modelViewProjection = new float[16];
+    public float[] modelView = new float[16];
 
     private MainActivity main;
-    private OpenGlControl control = new OpenGlControl();
 
     public OpenGlStuff(MainActivity main) {
         this.main = main;
-//        currentNew = new GLSelectableObject(cubeCoords[0], cubeCoords[1], cubeCoords[2]);
-//        currentNew.cubeStuff();
-//        currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
-    }
-
-    public void centerCursor(){
-        cubeCoords[0] = 0;
-        cubeCoords[1] = 0;
-    }
-
-    public void createObject(){
-        double cubeDistance = Math.sqrt(
-                ((currentOld.getModel()[12] - currentNew.getModel()[12])*(currentOld.getModel()[12] - currentNew.getModel()[12])) +
-                ((currentOld.getModel()[13] - currentNew.getModel()[13])*(currentOld.getModel()[13] - currentNew.getModel()[13])) +
-                ((currentOld.getModel()[14] - currentNew.getModel()[14])*(currentOld.getModel()[14] - currentNew.getModel()[14]))
-        );
-        if(cubeDistance < 1) return;
-        placeObjectInfrontOfCamera(currentNew);
-        currentOld = currentNew;
-        cubes.add(currentOld);
-
-        currentNew = new GLSelectableObject(cubeCoords[0], cubeCoords[1], cubeCoords[2]);
-
-        currentNew.cubeStuff();
-        currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
+        currentTool.getTool().register(this);
+//        for(Tools tool : Tools.values()){
+//        	tool.getTool().register(this);
+//        }
     }
 
     public void processButtonStart(boolean pressed){
+    	currentTool.getTool().processButtonStart(pressed);
     }
 
     public void processButtonSelect(boolean pressed){
+    	currentTool.getTool().processButtonSelect(pressed);
     }
 
     public void processButtonX(boolean pressed){
+    	currentTool.getTool().processButtonX(pressed);
         selectMode(0);
         main.getOverlayView().show3DToast("No-Drawing Mode");
     }
 
     public void processButtonY(boolean pressed){
+    	currentTool.getTool().processButtonY(pressed);
     }
 
     public void processButtonA(boolean pressed){
-    	 if(drawing==false && drawingMode!=0) {
-             drawStuff(true);
+    	currentTool.getTool().processButtonA(pressed);
+    	 if(currentTool.ordinal() != Tools.NOT_DRAWING.ordinal()) {
+    		 drawing = pressed;
          } else {
-             if(drawing==false)
-                 main.getOverlayView().show3DToast("Nothing to Draw!");
-             drawStuff(false);
+        	 main.getOverlayView().show3DToast("Nothing to Draw!");
          }
     }
 
     public void processButtonB(boolean pressed){
+    	currentTool.getTool().processButtonB(pressed);
     }
 
     public void processButtonR1(boolean pressed){
-    	if(pressed){
-	        drawingMode = (drawingMode+1)%5;
-	        toastMode(drawingMode);
-    	}
+    	currentTool.getTool().processButtonR1(pressed);
+//    	if(pressed){
+//	        drawingMode = (drawingMode+1)%5;
+//	        currentTool = currentTool.next();
+//	        currentTool.getTool().register(this);
+//	        toastMode(currentTool.ordinal());
+//    	}
     }
 
     public void processButtonL1(boolean pressed){
-    	if(pressed){
-        	drawingMode = (drawingMode+4)%5;
-	        toastMode(drawingMode);
-    	}
+    	currentTool.getTool().processButtonL1(pressed);
+//    	if(pressed){
+//        	drawingMode = (drawingMode+4)%5;
+//	        currentTool = currentTool.previous();
+//	        currentTool.getTool().register(this);
+//	        toastMode(currentTool.ordinal());
+//    	}
     }
 
     public void processButtonR2(boolean pressed){
+    	currentTool.getTool().processButtonR2(pressed);
     	r2Pressed = pressed;
     }
 
     public void processButtonL2(boolean pressed){
+    	currentTool.getTool().processButtonL2(pressed);
     	l2Pressed = pressed;
     }
 
     public void processButtonR3(boolean pressed){
+    	currentTool.getTool().processButtonR3(pressed);
     }
 
     public void processButtonL3(boolean pressed){
+    	currentTool.getTool().processButtonL3(pressed);
     	centerCursor();
     }
 
@@ -168,39 +163,36 @@ public class OpenGlStuff {
     }
 
     public void processRightStick(float x, float y){
-        if(control.getMoveUser().isMoving()){
-            float[] resultVector = new float[3];
-            float[] cVector = {x, 0f, -y};
-            mvMult(resultVector, headView, cVector);
-            control.processMove(x, y, resultVector);
-        } else {
-            control.processMove(x, y, null);
-        }
     }
 
     public void processDpad(float x, float y){
-        if(control.getMoveUser().isMoving()){
-            float[] resultVector = new float[3];
-            float[] cVector = {x, 0f, -y};
-            mvMult(resultVector, headView, cVector);
-            control.processMove(x, y, resultVector);
-        } else {
-            control.processMove(x, y, null);
-        }
     }
 
     public void processTriggers(float l, float r){
-        if(control.getMoveUser().isMoving()){
-            float[] resultVector = new float[3];
-            float[] cVector = {l, 0f, -r};
-            mvMult(resultVector, headView, cVector);
-            control.processMove(l, r, resultVector);
-        } else {
-            control.processMove(l, r, null);
-        }
+    }
+    
+    public void centerCursor(){
+    	cubeCoords[0] = 0;
+    	cubeCoords[1] = 0;
+    }
+    
+    public void createObject(){
+    	double cubeDistance = Math.sqrt(
+    			((currentOld.getModel()[12] - currentNew.getModel()[12])*(currentOld.getModel()[12] - currentNew.getModel()[12])) +
+    			((currentOld.getModel()[13] - currentNew.getModel()[13])*(currentOld.getModel()[13] - currentNew.getModel()[13])) +
+    			((currentOld.getModel()[14] - currentNew.getModel()[14])*(currentOld.getModel()[14] - currentNew.getModel()[14]))
+    			);
+    	if(cubeDistance < 1) return;
+    	placeObjectInfrontOfCamera(currentNew);
+    	currentOld = currentNew;
+    	cubes.add(currentOld);
+    	
+    	currentNew = new GLSelectableObject(cubeCoords);
+    	
+    	currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
     }
 
-    private void toastMode(int i){
+    public void toastMode(int i){
     	String toastString;
     	switch(i){
     	case 0:
@@ -225,12 +217,11 @@ public class OpenGlStuff {
         main.getOverlayView().show3DToast(toastString);
     }
 
-
-    public void drawStuff(boolean drawingBoolean){
-        drawing = drawingBoolean;
-    }
-
     public void selectMode(int drawingModeInt){
+    	if(drawingModeInt >= 0 && drawingModeInt < Tools.values().length)
+    		currentTool = Tools.values()[drawingModeInt];
+//    	else 
+//    		main.getOverlayView().show3DToast("Error selecting mode, please choose a value between 0 and " + (Tools.values().length-1));
         if(drawingMode==POLYGON_MID){
             sDMode = drawingModeInt;
             drawingMode = POLYGON_END;
@@ -241,14 +232,7 @@ public class OpenGlStuff {
         drawingMode = drawingModeInt;
     }
 
-    public int getMode(){
-        if(drawingMode<=4)
-            return drawingMode;
-        else
-            return drawingMode/10;
-    }
-
-    private void createLine(int test)
+    public void createLine(int test)
     {
         if(test==1) {
             placeObjectInfrontOfCamera(currentNew);
@@ -256,8 +240,7 @@ public class OpenGlStuff {
             currentOlder = currentOld;
             cubes.add(currentOld);
 
-            currentNew = new GLSelectableObject(0, 0, 20f);
-            currentNew.cubeStuff();
+            currentNew = new GLSelectableObject(cubeCoords);
             currentNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
             drawingMode = LINE_END;
             return;
@@ -268,9 +251,8 @@ public class OpenGlStuff {
             currentOldJR = currentNew;
             cubes.add(currentOldJR);
 
-            currentNew = new GLSelectableObject(cubeCoords[0], cubeCoords[1], cubeCoords[2]);
+            currentNew = new GLSelectableObject(cubeCoords);
 
-            currentNew.cubeStuff();
             currentNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
             createLine(currentOld, currentOldJR);
             if(drawingMode==POLYGON_MID){
@@ -280,7 +262,7 @@ public class OpenGlStuff {
         }
     }
 
-    private void createLine(GLSelectableObject cube1, GLSelectableObject cube2){
+    public void createLine(GLSelectableObject cube1, GLSelectableObject cube2){
         //System.out.println("Head View: " + cube1.getModel()[12] + " || " + cube1.getModel()[13] + " || " + cube1.getModel()[14]);
         double cubeDistance = Math.sqrt(
                 ((cube1.getModel()[12] - cube2.getModel()[12])*(cube1.getModel()[12] - cube2.getModel()[12])) +
@@ -293,7 +275,6 @@ public class OpenGlStuff {
         float mZ = (cube1.getModel()[14] + cube2.getModel()[14])/2;
 
         GLSelectableObject currentMid = new GLSelectableObject(-mX,-mY,-mZ);
-        currentMid.cubeStuff();
         currentMid.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
         cubes.add(currentMid);
         createLine(cube1,currentMid);
@@ -310,8 +291,7 @@ public class OpenGlStuff {
             hView = headView;
             cubes.add(currentOld);
 
-            currentNew = new GLSelectableObject(0, 0, 20f);
-            currentNew.cubeStuff();
+            currentNew = new GLSelectableObject(cubeCoords);
             currentNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
             drawingMode = CIRCLE_END;
             return;
@@ -322,9 +302,8 @@ public class OpenGlStuff {
             currentOldJR = currentNew;
             cubes.add(currentOldJR);
 
-            currentNew = new GLSelectableObject(cubeCoords[0], cubeCoords[1], cubeCoords[2]);
+            currentNew = new GLSelectableObject(cubeCoords);
 
-            currentNew.cubeStuff();
             currentNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
             createCircle(currentOld, currentOldJR, hView);
             return;
@@ -348,8 +327,7 @@ public class OpenGlStuff {
         float[] resultVector = new float[3];
         float[] resultVector2 = new float[3];
         mvMult(resultVector, h, cCoord3);
-        GLSelectableObject cube4 = new GLSelectableObject(0,0,0);
-        cube4.cubeStuff();
+        GLSelectableObject cube4 = new GLSelectableObject(cubeCoords);
         cube4.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
         cube4.getModel()[12] = cube1.getModel()[12]+ resultVector[0];
         cube4.getModel()[13] = cube1.getModel()[13]+ resultVector[1];
@@ -358,8 +336,7 @@ public class OpenGlStuff {
 
         float[] cCoord4 = {0,(float)-cubeDistance,0};
         mvMult(resultVector, h, cCoord4);
-        GLSelectableObject cube5 = new GLSelectableObject(0,0,0);
-        cube5.cubeStuff();
+        GLSelectableObject cube5 = new GLSelectableObject(cubeCoords);
         cube5.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
         cube5.getModel()[12] = cube1.getModel()[12]+ resultVector[0];
         cube5.getModel()[13] = cube1.getModel()[13]+ resultVector[1];
@@ -376,8 +353,7 @@ public class OpenGlStuff {
 
         float[] cCoord2 = {(float)-cubeDistance,0,0};
         mvMult(resultVector2, h, cCoord2);
-        GLSelectableObject cube3 = new GLSelectableObject(0,0,0);
-        cube3.cubeStuff();
+        GLSelectableObject cube3 = new GLSelectableObject(cubeCoords);
         cube3.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
         cube3.getModel()[12] = cube1.getModel()[12]+ resultVector2[0];
         cube3.getModel()[13] = cube1.getModel()[13]+ resultVector2[1];
@@ -411,7 +387,6 @@ public class OpenGlStuff {
         float[] mid = {(float)Math.cos(angle)*-radiusZ, (float)Math.sin(angle)*-radiusZ, 0};
         mvMult(resultVector, hVZ, mid);
         cubeNew = new GLSelectableObject(0,0,0);
-        cubeNew.cubeStuff();
         cubeNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
         cubeNew.getModel()[12] = o[0]+ resultVector[0];
         cubeNew.getModel()[13] = o[1]+ resultVector[1];
@@ -421,7 +396,6 @@ public class OpenGlStuff {
         mid[0] = -1*mid[0];
         mvMult(resultVector, hVZ, mid);
         cubeNew = new GLSelectableObject(0,0,0);
-        cubeNew.cubeStuff();
         cubeNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
         cubeNew.getModel()[12] = o[0]+ resultVector[0];
         cubeNew.getModel()[13] = o[1]+ resultVector[1];
@@ -432,7 +406,6 @@ public class OpenGlStuff {
         mid[1] = -1*mid[1];
         mvMult(resultVector, hVZ, mid);
         cubeNew = new GLSelectableObject(0,0,0);
-        cubeNew.cubeStuff();
         cubeNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
         cubeNew.getModel()[12] = o[0]+ resultVector[0];
         cubeNew.getModel()[13] = o[1]+ resultVector[1];
@@ -442,7 +415,6 @@ public class OpenGlStuff {
         mid[0] = -1*mid[0];
         mvMult(resultVector, hVZ, mid);
         cubeNew = new GLSelectableObject(0,0,0);
-        cubeNew.cubeStuff();
         cubeNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
         cubeNew.getModel()[12] = o[0]+ resultVector[0];
         cubeNew.getModel()[13] = o[1]+ resultVector[1];
@@ -453,16 +425,8 @@ public class OpenGlStuff {
         createArc2(mid,cube2,start,o,hVZ, radiusZ);
     }
 
-    private void placeObjectInfrontOfCamera(GLObject moveObject) {
-        float[] resultVector = new float[3];
-        float[] cVector = { cubeCoords[0], cubeCoords[1], -cubeCoords[2] };
-        mvMult(resultVector, headView, cVector);
-        cVector[0] = resultVector[0];
-        cVector[1] = resultVector[1];
-        cVector[2] = resultVector[2];
-        moveObject.getModel()[12]=resultVector[0];
-        moveObject.getModel()[13]=resultVector[1];
-        moveObject.getModel()[14]=resultVector[2];
+    public void placeObjectInfrontOfCamera(GLObject moveObject) {
+        mvMult(moveObject.getModel(), 12, headView, cubeCoords);
     }
 
     /**
@@ -546,15 +510,12 @@ public class OpenGlStuff {
 
         currentNew = new GLSelectableObject(0f, 0f, 20f);
 
-        currentNew.cubeStuff();
         currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
 
         for (GLSelectableObject cube : cubes) {
-            cube.cubeStuff();
             cube.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
         }
 
-        floor.floorStuff();
         floor.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
@@ -583,16 +544,16 @@ public class OpenGlStuff {
         Log.i("TEST", "End");
     }
 
-    /**
-     * Prepares OpenGL ES before we draw a frame.
-     *
-     * @param headTransform
-     *            The head transformation in the new frame.
-     */
     public void mvMult(float a[], float b[], float c[]) {
         a[0] = b[0] * c[0] + b[1] * c[1] + b[2] * c[2];
         a[1] = b[4] * c[0] + b[5] * c[1] + b[6] * c[2];
         a[2] = b[8] * c[0] + b[9] * c[1] + b[10] * c[2];
+    }
+
+    public void mvMult(float a[], int offset, float b[], float c[]) {
+        a[offset    ] = b[0] * c[0] + b[1] * c[1] + b[2 ] * c[2];
+        a[offset + 1] = b[4] * c[0] + b[5] * c[1] + b[6 ] * c[2];
+        a[offset + 2] = b[8] * c[0] + b[9] * c[1] + b[10] * c[2];
     }
 
 
@@ -610,17 +571,8 @@ public class OpenGlStuff {
             }
         }
 
-        if(drawing==true && drawingMode==FREE_DRAWING){
-            createObject();
-        }
-        if(drawingMode==LINE && drawing==true) {
-            createLine(1);
-            drawing = false;
-        }
-        if(drawing==true && drawingMode==LINE_END) {
-            createLine(2);
-            drawing = false;
-            drawingMode = LINE;
+        if(currentTool.ordinal() == Tools.FREE_DRAWING.ordinal() || currentTool.ordinal() == Tools.LINE.ordinal()){
+            currentTool.getTool().onNewFrame(headTransform);
         }
         if(drawingMode==CIRCLE && drawing==true) {
             createCircle(1);
@@ -648,8 +600,6 @@ public class OpenGlStuff {
         placeObjectInfrontOfCamera(currentNew);
         float[] uVector = new float[4];
         headTransform.getUpVector(uVector,0);
-        //System.out.println("Up Vector: " + uVector[0] + " || " + uVector[1] + " || " + uVector[2]);
-        //System.out.println("Head View: " + headView[4] + " || " + headView[5] + " || " + headView[6]);
 
         // Build the camera matrix and apply it to the ModelView.
         Matrix.setLookAtM(camera, 0, Eyes[0], Eyes[1], CAMERA_Z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
@@ -693,6 +643,7 @@ public class OpenGlStuff {
         Matrix.multiplyMM(modelView, 0, view, 0, floor.getModel(), 0);
         Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
         floor.drawFloor();
+        currentTool.getTool().onDrawEye(eye);
     }
 
     /**
@@ -786,14 +737,16 @@ public class OpenGlStuff {
         protected float yPos = 0f;
         protected float zPos = 0f;
 
-        // public GLObject(){}
         public GLObject(float xPos, float yPos, float zPos) {
             this.xPos = xPos;
             this.yPos = yPos;
             this.zPos = zPos;
         }
+        public GLObject(float[] pos) {
+            this(pos[0], pos[1], pos[2]);
+        }
 
-        public void floorStuff() {
+        protected void stuff() {
             // make a floor
             ByteBuffer bbFloorVertices = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_COORDS.length * 4);
             bbFloorVertices.order(ByteOrder.nativeOrder());
@@ -850,6 +803,7 @@ public class OpenGlStuff {
          *            The EGL configuration used when creating the surface.
          */
         public void onSurfaceCreated(int vertexShader, int gridShader, int passthroughShader) {
+        	stuff();
             program = GLES20.glCreateProgram();
             GLES20.glAttachShader(program, vertexShader);
             if (this instanceof GLSelectableObject) {
@@ -908,8 +862,13 @@ public class OpenGlStuff {
         public GLSelectableObject(float xPos, float yPos, float zPos) {
             super(xPos, yPos, zPos);
         }
+        
+        public GLSelectableObject(float[] pos) {
+            super(pos);
+        }
 
-        public void cubeStuff() {
+        @Override
+        protected void stuff() {
             ByteBuffer bbVertices = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_COORDS.length * 4);
             bbVertices.order(ByteOrder.nativeOrder());
             vertices = bbVertices.asFloatBuffer();
@@ -967,4 +926,8 @@ public class OpenGlStuff {
             checkGLError("Drawing cube");
         }
     }
+
+	public void createNewObject() {
+		currentNew = new GLSelectableObject(cubeCoords);
+	}
 }
