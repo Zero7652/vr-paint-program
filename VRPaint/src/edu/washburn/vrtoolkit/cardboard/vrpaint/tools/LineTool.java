@@ -20,8 +20,9 @@ public class LineTool extends ToolGeneric{
 	private List<GLSelectableObject> fullList = new ArrayList<GLSelectableObject>();
 	private Iterator<GLSelectableObject> fullListIterator;
 	@Override
-    public void processButtonA(boolean pressed){
+    public boolean processButtonA(boolean pressed){
     	moving = pressed;
+		return true;
     }
 	@Override
 	public void onNewFrame(HeadTransform headTransform){

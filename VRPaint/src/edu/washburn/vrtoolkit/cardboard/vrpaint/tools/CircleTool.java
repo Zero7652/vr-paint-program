@@ -23,8 +23,9 @@ public class CircleTool extends ToolGeneric{
     public float[] hView = null;
     
 	@Override
-    public void processButtonA(boolean pressed){
+    public boolean processButtonA(boolean pressed){
     	moving = pressed;
+		return true;
     }
 	@Override
 	public void onNewFrame(HeadTransform headTransform){
@@ -71,7 +72,7 @@ public class CircleTool extends ToolGeneric{
                 cube1.getModel()[13] - cube2.getModel()[13],
                 cube1.getModel()[14] - cube2.getModel()[14]
         };
-        double cubeDistance = Math.sqrt(
+        float cubeDistance = (float) Math.sqrt(
                 (circleVector[0]*circleVector[0]) +
                 (circleVector[1]*circleVector[1]) +
                 (circleVector[2]*circleVector[2])
@@ -92,7 +93,7 @@ public class CircleTool extends ToolGeneric{
         cube4.getModel()[14] = cube1.getModel()[14]+ resultVector[2];
         currentList.add(cube4);
 
-        float[] cCoord4 = {0,(float)-cubeDistance,0};
+        float[] cCoord4 = {0,-cubeDistance,0};
         world.mvMult(resultVector, h, cCoord4);
         GLSelectableObject cube5 = getNewObject(world.cubeCoords);
         cube5.getModel()[12] = cube1.getModel()[12]+ resultVector[0];
@@ -100,7 +101,7 @@ public class CircleTool extends ToolGeneric{
         cube5.getModel()[14] = cube1.getModel()[14]+ resultVector[2];
         currentList.add(cube5);
 
-        float[] cCoord = {(float)cubeDistance,0,0};
+        float[] cCoord = {cubeDistance,0,0};
         world.mvMult(resultVector, h, cCoord);
         cube2.getModel()[12] = cube1.getModel()[12]+ resultVector[0];
         cube2.getModel()[13] = cube1.getModel()[13]+ resultVector[1];
@@ -108,7 +109,7 @@ public class CircleTool extends ToolGeneric{
         currentList.add(cube2);
 
 
-        float[] cCoord2 = {(float)-cubeDistance,0,0};
+        float[] cCoord2 = {-cubeDistance,0,0};
         world.mvMult(resultVector2, h, cCoord2);
         GLSelectableObject cube3 = getNewObject(world.cubeCoords);
         cube3.getModel()[12] = cube1.getModel()[12]+ resultVector2[0];
@@ -117,7 +118,7 @@ public class CircleTool extends ToolGeneric{
         currentList.add(cube3);
         float[] origin = {cube1.getModel()[12],cube1.getModel()[13],cube1.getModel()[14]};
 
-        createArc2(cCoord, cCoord3, cCoord, origin, hView, (float)cubeDistance);
+        createArc2(cCoord, cCoord3, cCoord, origin, hView, cubeDistance);
     }
     
     private void createArc2(float[] cube1, float[] cube2, float[] start, float[] o, float[] hVZ, float radiusZ){

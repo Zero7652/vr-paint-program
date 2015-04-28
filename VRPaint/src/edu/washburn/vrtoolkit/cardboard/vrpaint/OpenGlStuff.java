@@ -20,18 +20,9 @@ import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.samples.treasurehunt.R;
 
-import edu.washburn.vrtoolkit.cardboard.vrpaint.tools.OpenGlControl;
 import edu.washburn.vrtoolkit.cardboard.vrpaint.tools.OpenGlControl.Tools;
 
 public class OpenGlStuff {
-    private static final int NOT_DRAWING = 0;
-    private static final int LINE = 2;
-    private static final int CIRCLE = 3;
-    private static final int CIRCLE_END = 31;
-    private static final int POLYGON = 4;
-    public static final int LINE_END = 20;
-    public static final int POLYGON_MID = 40;
-    private static final int POLYGON_END = 41;
     public static final String TAG = "MainActivity";
 
     public static final float Z_NEAR = 0.1f;
@@ -55,9 +46,7 @@ public class OpenGlStuff {
     public boolean drawing = false;
     public boolean l2Pressed= false;
     public boolean r2Pressed = false;
-    public int drawingMode = NOT_DRAWING;
     public Tools currentTool = Tools.NOT_DRAWING;
-    private int sDMode;
 
     private GLObject floor = new GLObject(0f, 20f, 0f);
     public List<GLSelectableObject> cubes = new ArrayList<GLSelectableObject>();
@@ -87,119 +76,150 @@ public class OpenGlStuff {
     }
 
     public void processButtonStart(boolean pressed){
-    	currentTool.getTool().processButtonStart(pressed);
+    	if(!currentTool.getTool().processButtonStart(pressed)){
+    		
+    	}
     }
 
     public void processButtonSelect(boolean pressed){
-    	currentTool.getTool().processButtonSelect(pressed);
+    	if(!currentTool.getTool().processButtonSelect(pressed)){
+    		
+    	}
     }
 
     public void processButtonX(boolean pressed){
-    	currentTool.getTool().processButtonX(pressed);
-        selectMode(0);
-        main.getOverlayView().show3DToast("No-Drawing Mode");
+    	if(!currentTool.getTool().processButtonX(pressed)){
+	        selectMode(0);
+	        main.getOverlayView().show3DToast("No-Drawing Mode");
+    	}
     }
 
-    public void moveUser(float xZ, float yZ, float zZ) {
-        float[] resultVector = {xZ, yZ, zZ};
-        mvMult(resultVector, headView, resultVector);
-        centerZ[0] = centerZ[0] + resultVector[0];
-        centerZ[1] = centerZ[1] + resultVector[1];
-        centerZ[2] = centerZ[2] + resultVector[2];
-        lookingZ[0] = lookingZ[0] + resultVector[0];
-        lookingZ[1] = lookingZ[1] + resultVector[1];
-        lookingZ[2] = lookingZ[2] + resultVector[2];
-        placeObjectInfrontOfCamera(currentNew);
-    }
 
     public void processButtonY(boolean pressed){
-    	currentTool.getTool().processButtonY(pressed);
+    	if(!currentTool.getTool().processButtonY(pressed)){
+    		
+    	}
     }
 
-    public void centerUser(){
-        centerZ[0] = 0.0f;
-        centerZ[1] = 0.0f;
-        centerZ[2] = 0.0f;
-        lookingZ[0] = 0.0f;
-        lookingZ[1] = 0.0f;
-        lookingZ[2] = 0.1f;
-    }
-
-    public void moveCursor(double i, double j, double k) {
-        double limitZ = cubeCoords[2] / Math.sqrt(3);
-        if (Math.abs(cubeCoords[0] + (float) i) < Math.abs(limitZ)) {
-            cubeCoords[0] = cubeCoords[0] + (float) i;
-        }
-        if (Math.abs(cubeCoords[1] - (float) j) < Math.abs(limitZ)) {
-            cubeCoords[1] = cubeCoords[1] - (float) j;
-        }
-        if (((cubeCoords[2] + (float) k) <= 80) || ((cubeCoords[2] - (float) k) <= 1)) {
-            cubeCoords[2] = cubeCoords[2] + (float) k;
-            //System.out.println("Zcoord: " + cubeCoords[2]);
-        }
-    }
     public void processButtonA(boolean pressed){
-    	currentTool.getTool().processButtonA(pressed);
-    	 if(currentTool.ordinal() != Tools.NOT_DRAWING.ordinal()) {
-    		 drawing = pressed;
-         } else {
-        	 main.getOverlayView().show3DToast("Nothing to Draw!");
-         }
+    	if(!currentTool.getTool().processButtonA(pressed)){
+	    	 if(currentTool.ordinal() != Tools.NOT_DRAWING.ordinal()) {
+	    		 drawing = pressed;
+	         } else {
+	        	 main.getOverlayView().show3DToast("Nothing to Draw!");
+	         }
+    	}
     }
 
     public void processButtonB(boolean pressed){
-    	currentTool.getTool().processButtonB(pressed);
+    	if(!currentTool.getTool().processButtonB(pressed)){
+    		
+    	}
     }
 
     public void processButtonR1(boolean pressed){
-    	currentTool.getTool().processButtonR1(pressed);
+    	if(!currentTool.getTool().processButtonR1(pressed)){
+    		
+    	}
     }
 
     public void processButtonL1(boolean pressed){
-    	currentTool.getTool().processButtonL1(pressed);
+    	if(!currentTool.getTool().processButtonL1(pressed)){
+    		
+    	}
     }
 
     public void processButtonR2(boolean pressed){
-    	currentTool.getTool().processButtonR2(pressed);
-    	r2Pressed = pressed;
+    	if(!currentTool.getTool().processButtonR2(pressed)){
+    		r2Pressed = pressed;
+    	}
     }
 
     public void processButtonL2(boolean pressed){
-    	currentTool.getTool().processButtonL2(pressed);
-    	l2Pressed = pressed;
+    	if(!currentTool.getTool().processButtonL2(pressed)){
+    		l2Pressed = pressed;
+    	}
     }
 
     public void processButtonR3(boolean pressed){
-    	currentTool.getTool().processButtonR3(pressed);
-        centerCursor();
+    	if(!currentTool.getTool().processButtonR3(pressed)){
+	        centerCursor();
+	    }
     }
 
     public void processButtonL3(boolean pressed){
-    	currentTool.getTool().processButtonL3(pressed);
-        centerUser();
+    	if(!currentTool.getTool().processButtonL3(pressed)){
+    		centerUser();
+    	}
     }
 
     public void processLeftStick(float x, float y){
-        if(Math.abs(cubeCoords[0]+ x)<15){
-            cubeCoords[0]= cubeCoords[0] + x;
-        }
-        if(Math.abs(cubeCoords[1]- y)<15){
-            cubeCoords[1]= cubeCoords[1] - y;
-        }
+    	if(!currentTool.getTool().processLeftStick(x, y)){
+	        if(Math.abs(cubeCoords[0]+ x)<15){
+	            cubeCoords[0]= cubeCoords[0] + x;
+	        }
+	        if(Math.abs(cubeCoords[1]- y)<15){
+	            cubeCoords[1]= cubeCoords[1] - y;
+	        }
+    	}
     }
 
     public void processRightStick(float x, float y){
+    	if(!currentTool.getTool().processRightStick(x, y)){
+    		
+    	}
     }
 
     public void processDpad(float x, float y){
+    	if(!currentTool.getTool().processDpad(x, y)){
+    		
+    	}
     }
 
     public void processTriggers(float l, float r){
+    	if(!currentTool.getTool().processTriggers(l, r)){
+    		
+    	}
+    }
+    
+    public void centerUser(){
+    	centerZ[0] = 0.0f;
+    	centerZ[1] = 0.0f;
+    	centerZ[2] = 0.0f;
+    	lookingZ[0] = 0.0f;
+    	lookingZ[1] = 0.0f;
+    	lookingZ[2] = 0.1f;
     }
     
     public void centerCursor(){
     	cubeCoords[0] = 0;
     	cubeCoords[1] = 0;
+    }
+
+    public void moveUser(float xZ, float yZ, float zZ) {
+    	float[] resultVector = {xZ, yZ, zZ};
+    	mvMult(resultVector, headView, resultVector);
+    	centerZ[0] = centerZ[0] + resultVector[0];
+    	centerZ[1] = centerZ[1] + resultVector[1];
+    	centerZ[2] = centerZ[2] + resultVector[2];
+    	lookingZ[0] = lookingZ[0] + resultVector[0];
+    	lookingZ[1] = lookingZ[1] + resultVector[1];
+    	lookingZ[2] = lookingZ[2] + resultVector[2];
+    	placeObjectInfrontOfCamera(currentNew);
+    }
+    
+    public void moveCursor(double i, double j, double k) {
+    	double limitZ = cubeCoords[2] / Math.sqrt(3);
+    	if (Math.abs(cubeCoords[0] + (float) i) < Math.abs(limitZ)) {
+    		cubeCoords[0] = cubeCoords[0] + (float) i;
+    	}
+    	if (Math.abs(cubeCoords[1] - (float) j) < Math.abs(limitZ)) {
+    		cubeCoords[1] = cubeCoords[1] - (float) j;
+    	}
+    	if (((cubeCoords[2] + (float) k) <= 80) || ((cubeCoords[2] - (float) k) <= 1)) {
+    		cubeCoords[2] = cubeCoords[2] + (float) k;
+    		//System.out.println("Zcoord: " + cubeCoords[2]);
+    	}
     }
 
     public void toastMode(int i){
@@ -233,7 +253,7 @@ public class OpenGlStuff {
     	else 
     		main.getOverlayView().show3DToast("Error selecting mode, please choose a value between 0 and " + (Tools.values().length-1));
     }
-
+    
     public void placeObjectInfrontOfCamera(GLObject moveObject) {
         float[] resultVector = new float[3];
         mvMult(resultVector, headView, cubeCoords);
@@ -241,6 +261,9 @@ public class OpenGlStuff {
         moveObject.getModel()[13] = resultVector[1] + -camera[13];
         moveObject.getModel()[14] = resultVector[2] + -camera[14];
     }
+//    public void placeObjectInfrontOfCamera(GLObject moveObject) {
+//        mvMult(moveObject.getModel(), 12, headView, cubeCoords);
+//    }
 
     /**
      * Converts a raw text file, saved as a resource, into an OpenGL ES shader.

@@ -15,65 +15,80 @@ public class ToolGeneric {
 		this.moving = moving;
 	}
 	
-
-
-    public void processButtonStart(boolean pressed){
+    public boolean processButtonStart(boolean pressed){
+		return false;
     }
 
-    public void processButtonSelect(boolean pressed){
+    public boolean processButtonSelect(boolean pressed){
+		return false;
     }
 
-    public void processButtonX(boolean pressed){
+    public boolean processButtonX(boolean pressed){
+		return false;
     }
 
-    public void processButtonY(boolean pressed){
+    public boolean processButtonY(boolean pressed){
+		return false;
     }
 
-    public void processButtonA(boolean pressed){
-    	moving = pressed;
+    public boolean processButtonA(boolean pressed){
+		return false;
     }
 
-    public void processButtonB(boolean pressed){
+    public boolean processButtonB(boolean pressed){
+		return false;
     }
 
-    public void processButtonR1(boolean pressed){
+    public boolean processButtonR1(boolean pressed){
     	if(pressed){
 	        world.currentTool = world.currentTool.next();
 	        world.currentTool.getTool().register(world);
 	        world.toastMode(world.currentTool.ordinal());
+			return true;
     	}
+		return false;
     }
 
-    public void processButtonL1(boolean pressed){
+    public boolean processButtonL1(boolean pressed){
     	if(pressed){
 	        world.currentTool = world.currentTool.previous();
 	        world.currentTool.getTool().register(world);
 	        world.toastMode(world.currentTool.ordinal());
+			return true;
     	}
+		return false;
     }
 
-    public void processButtonR2(boolean pressed){
+    public boolean processButtonR2(boolean pressed){
+		return false;
     }
 
-    public void processButtonL2(boolean pressed){
+    public boolean processButtonL2(boolean pressed){
+		return false;
     }
 
-    public void processButtonR3(boolean pressed){
+    public boolean processButtonR3(boolean pressed){
+		return false;
     }
 
-    public void processButtonL3(boolean pressed){
+    public boolean processButtonL3(boolean pressed){
+		return false;
     }
 
-    public void processLeftStick(float x, float y){
+    public boolean processLeftStick(float x, float y){
+		return false;
     }
 
-    public void processRightStick(float x, float y){
+    public boolean processRightStick(float x, float y){
+		return false;
     }
 
-    public void processDpad(float x, float y){
+    public boolean processDpad(float x, float y){
+		return false;
     }
 
-    public void processTriggers(float l, float r){
+    public boolean processTriggers(float l, float r){
+		return false;
     }
 	
 	public void onDrawEye(Eye eye){
@@ -81,22 +96,6 @@ public class ToolGeneric {
 	}
 	
 	public void onNewFrame(HeadTransform headTransform){
-//		if(moving)
-//			world.createObject();
-
-//    	double cubeDistance = Math.sqrt(
-//    			((currentOld.getModel()[12] - currentNew.getModel()[12])*(currentOld.getModel()[12] - currentNew.getModel()[12])) +
-//    			((currentOld.getModel()[13] - currentNew.getModel()[13])*(currentOld.getModel()[13] - currentNew.getModel()[13])) +
-//    			((currentOld.getModel()[14] - currentNew.getModel()[14])*(currentOld.getModel()[14] - currentNew.getModel()[14]))
-//    			);
-//    	if(cubeDistance < 1) return;
-//    	placeObjectInfrontOfCamera(currentNew);
-//    	currentOld = currentNew;
-//    	cubes.add(currentOld);
-//    	
-//    	currentNew = new GLSelectableObject(cubeCoords);
-//    	
-//    	currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
 	}
 	
 	public void register(OpenGlStuff world) {
