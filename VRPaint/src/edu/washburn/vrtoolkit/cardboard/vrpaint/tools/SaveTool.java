@@ -58,7 +58,7 @@ public class SaveTool extends ToolGeneric {
 				ioe.printStackTrace();
 			}
 		}
-		return pressed;
+		return true;
     }
 
 	@Override
@@ -110,6 +110,7 @@ public class SaveTool extends ToolGeneric {
 				GLES20.glDeleteProgram(cube.getProgram());
 			}
 			world.cubes.clear();
+			clear = false;
 		}
         if(moving) {
         	loadCubes();
