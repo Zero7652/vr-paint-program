@@ -68,12 +68,13 @@ public class OpenGlStuff {
     public GLSelectableObject currentOldJR;
 
     private float[] camera = new float[16];
-    private float[] view = new float[16];
+    public float[] view = new float[16];
     private float[] headView = new float[16];
-    private float[] modelViewProjection = new float[16];
-    private float[] modelView = new float[16];
+    public float[] modelViewProjection = new float[16];
+    public float[] modelView = new float[16];
     private float[] centerZ = {0,0,0};
     private float[] lookingZ = {Eyes[0],Eyes[1],CAMERA_Z};
+    private float[] locationZ = new float[3];
 
     private MainActivity main;
 
@@ -99,20 +100,18 @@ public class OpenGlStuff {
         main.getOverlayView().show3DToast("No-Drawing Mode");
     }
 
-    public void moveUser(float xZ, float yZ, float zZ){
-        float[] resultVector = {xZ,yZ,zZ};
-        mvMult(resultVector,headView,resultVector);
+    public void moveUser(float xZ, float yZ, float zZ) {
+        float[] resultVector = {xZ, yZ, zZ};
+        mvMult(resultVector, headView, resultVector);
         centerZ[0] = centerZ[0] + resultVector[0];
         centerZ[1] = centerZ[1] + resultVector[1];
         centerZ[2] = centerZ[2] + resultVector[2];
         lookingZ[0] = lookingZ[0] + resultVector[0];
         lookingZ[1] = lookingZ[1] + resultVector[1];
         lookingZ[2] = lookingZ[2] + resultVector[2];
-        //cubeCoords[0] = cubeCoords[0] + x;
-        //cubeCoords[1] = cubeCoords[1] + y;
-        //cubeCoords[2] = cubeCoords[2] + z;
         placeObjectInfrontOfCamera(currentNew);
-        //System.out.println("Coord: " + headView[0] + " || " + headView[1] + " || " + headView[2] + " || " + headView[3]);
+    }
+
     public void processButtonY(boolean pressed){
     	currentTool.getTool().processButtonY(pressed);
     }
@@ -126,17 +125,19 @@ public class OpenGlStuff {
         lookingZ[2] = 0.1f;
     }
 
-    public void moveCursor(double i, double j, double k){
-        if(Math.abs(cubeCoords[0]+ (float)i)<15){
-            cubeCoords[0]= cubeCoords[0] + (float)i;
+    public void moveCursor(double i, double j, double k) {
+        double limitZ = cubeCoords[2] / Math.sqrt(3);
+        if (Math.abs(cubeCoords[0] + (float) i) < Math.abs(limitZ)) {
+            cubeCoords[0] = cubeCoords[0] + (float) i;
         }
-        if(Math.abs(cubeCoords[1]- (float)j)<15){
-            cubeCoords[1]= cubeCoords[1] - (float)j;
+        if (Math.abs(cubeCoords[1] - (float) j) < Math.abs(limitZ)) {
+            cubeCoords[1] = cubeCoords[1] - (float) j;
         }
-        if(((cubeCoords[2]+(float)k)<=80)||((cubeCoords[2]-(float)k)<=0)){
-            cubeCoords[2] = cubeCoords[2] + (float)k;
+        if (((cubeCoords[2] + (float) k) <= 80) || ((cubeCoords[2] - (float) k) <= 1)) {
+            cubeCoords[2] = cubeCoords[2] + (float) k;
             //System.out.println("Zcoord: " + cubeCoords[2]);
         }
+    }
     public void processButtonA(boolean pressed){
     	currentTool.getTool().processButtonA(pressed);
     	 if(currentTool.ordinal() != Tools.NOT_DRAWING.ordinal()) {
@@ -160,6 +161,7 @@ public class OpenGlStuff {
         placeObjectInfrontOfCamera(currentNew);
         currentOld = currentNew;
         cubes.add(currentOld);
+    }
     public void processButtonR1(boolean pressed){
     	currentTool.getTool().processButtonR1(pressed);
 //    	if(pressed){
@@ -192,11 +194,12 @@ public class OpenGlStuff {
 
     public void processButtonR3(boolean pressed){
     	currentTool.getTool().processButtonR3(pressed);
+        centerCursor();
     }
 
     public void processButtonL3(boolean pressed){
     	currentTool.getTool().processButtonL3(pressed);
-    	centerCursor();
+        centerUser();
     }
 
     public void processLeftStick(float x, float y){
@@ -220,22 +223,6 @@ public class OpenGlStuff {
     public void centerCursor(){
     	cubeCoords[0] = 0;
     	cubeCoords[1] = 0;
-    }
-    
-    public void createObject(){
-    	double cubeDistance = Math.sqrt(
-    			((currentOld.getModel()[12] - currentNew.getModel()[12])*(currentOld.getModel()[12] - currentNew.getModel()[12])) +
-    			((currentOld.getModel()[13] - currentNew.getModel()[13])*(currentOld.getModel()[13] - currentNew.getModel()[13])) +
-    			((currentOld.getModel()[14] - currentNew.getModel()[14])*(currentOld.getModel()[14] - currentNew.getModel()[14]))
-    			);
-    	if(cubeDistance < 1) return;
-    	placeObjectInfrontOfCamera(currentNew);
-    	currentOld = currentNew;
-    	cubes.add(currentOld);
-    	
-    	currentNew = new GLSelectableObject(cubeCoords);
-    	
-    	currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
     }
 
     public void toastMode(int i){
@@ -472,7 +459,11 @@ public class OpenGlStuff {
     }
 
     public void placeObjectInfrontOfCamera(GLObject moveObject) {
-        mvMult(moveObject.getModel(), 12, headView, cubeCoords);
+        float[] resultVector = new float[3];
+        mvMult(resultVector, headView, cubeCoords);
+        moveObject.getModel()[12] = resultVector[0] + -camera[12];
+        moveObject.getModel()[13] = resultVector[1] + -camera[13];
+        moveObject.getModel()[14] = resultVector[2] + -camera[14];
     }
 
     /**
@@ -649,7 +640,6 @@ public class OpenGlStuff {
 
         // Build the camera matrix and apply it to the ModelView.
         Matrix.setLookAtM(camera, 0, lookingZ[0], lookingZ[1], lookingZ[2], centerZ[0], centerZ[1], centerZ[2], 0.0f, 1.0f, 0.0f);
-        //Log.i("camera", "Camera" + camera[12] + " || " + camera[13] + " || " + camera[14] + " || " + camera[15] + " || ");
 
         checkGLError("onReadyToDraw");
     }
@@ -846,7 +836,7 @@ public class OpenGlStuff {
          * OpenGL doesn't use Java arrays, but rather needs data in a format it
          * can understand. Hence we use ByteBuffers.
          *
-         * @param config
+         * @param //config
          *            The EGL configuration used when creating the surface.
          */
         public void onSurfaceCreated(int vertexShader, int gridShader, int passthroughShader) {
