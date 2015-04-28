@@ -13,8 +13,7 @@ import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff;
 import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff.GLSelectableObject;
 
 public class LineTool extends ToolGeneric{
-	private boolean initialized = false;
-	private boolean wasMoving = false;
+	private boolean wasMoving = true;
 	private GLSelectableObject start = null;
 	private GLSelectableObject end = null;
 	private List<GLSelectableObject> currentList = new ArrayList<GLSelectableObject>();
@@ -26,15 +25,15 @@ public class LineTool extends ToolGeneric{
     }
 	@Override
 	public void onNewFrame(HeadTransform headTransform){
-		if(!initialized){
-			initialized = true;
-			start = world.new GLSelectableObject(world.cubeCoords);
-	        start.onSurfaceCreated(world.vertexShader, world.passthroughShader, world.passthroughShader);
-			world.placeObjectInfrontOfCamera(start);
-			end = world.new GLSelectableObject(world.cubeCoords);
-	        end.onSurfaceCreated(world.vertexShader, world.passthroughShader, world.passthroughShader);
+		fullListIterator = fullList.iterator();
+		if(wasMoving && !moving){
+			fullList.removeAll(currentList);
+			world.cubes.addAll(currentList);
+			start = getNewObject(0, 0, 0);
+			end = getNewObject(0, 0, 0);
+			currentList.clear();
+			wasMoving = false;
 		}
-
 		if(!wasMoving && !moving){
         	currentList.clear();
         	currentList.add(start);
@@ -45,21 +44,14 @@ public class LineTool extends ToolGeneric{
         	currentList.add(start);
         	currentList.add(end);
 			world.placeObjectInfrontOfCamera(end);
-			fullListIterator = fullList.iterator();
             createLine(start, end);
             wasMoving = true;
-        }
-        if(wasMoving && !moving){
-        	fullList.removeAll(currentList);
-        	world.cubes.addAll(currentList);
-        	currentList.clear();
-        	wasMoving = false;
         }
 	}
 
 	@Override
 	public void onDrawEye(Eye eye){
-        float[] perspective = eye.getPerspective(world.Z_NEAR, world.Z_FAR);
+        float[] perspective = eye.getPerspective(OpenGlStuff.Z_NEAR, OpenGlStuff.Z_FAR);
 		for(GLSelectableObject cube : currentList){
 			// Build the ModelView and ModelViewProjection matrices
 			// for calculating cube position and light.
@@ -90,6 +82,10 @@ public class LineTool extends ToolGeneric{
 
 	public void register(OpenGlStuff world) {
 		this.world = world;
+	}
+	
+	private GLSelectableObject getNewObject(float[] pos){
+		return getNewObject(pos[0], pos[1], pos[2]);
 	}
 	
 	private GLSelectableObject getNewObject(float x, float y, float z){

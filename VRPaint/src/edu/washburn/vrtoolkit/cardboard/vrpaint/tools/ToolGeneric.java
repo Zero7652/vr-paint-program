@@ -4,7 +4,6 @@ import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 
 import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff;
-import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff.GLSelectableObject;
 
 public class ToolGeneric {
 	protected OpenGlStuff world = null;
