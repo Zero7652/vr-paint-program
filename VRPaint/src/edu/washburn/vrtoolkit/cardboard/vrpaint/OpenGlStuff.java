@@ -65,6 +65,9 @@ public class OpenGlStuff {
     private float[] lookingZ = {Eyes[0],Eyes[1],CAMERA_Z};
     private float[] locationZ = new float[3];
 
+    private static final double GRAVITY = 0.25;
+    private boolean isFalling = false;
+
     private MainActivity main;
 
     public OpenGlStuff(MainActivity main) {
@@ -110,7 +113,7 @@ public class OpenGlStuff {
 
     public void processButtonB(boolean pressed){
     	if(!currentTool.getTool().processButtonB(pressed)){
-    		
+            isFalling = !isFalling;
     	}
     }
 
@@ -203,7 +206,6 @@ public class OpenGlStuff {
     	lookingZ[0] = lookingZ[0] + resultVector[0];
     	lookingZ[1] = lookingZ[1] + resultVector[1];
     	lookingZ[2] = lookingZ[2] + resultVector[2];
-    	placeObjectInfrontOfCamera(currentNew);
     }
     
     public void moveCursor(double i, double j, double k) {
@@ -409,12 +411,26 @@ public class OpenGlStuff {
             currentTool.getTool().onNewFrame(headTransform);
         }
 
+        if(isFalling){
+            for(GLSelectableObject cube : cubes){
+                cube.velocity += GRAVITY;
+                // cube.xVelocity *= 0.9;
+                // cube.x += cube.xVelocity;
+                cube.getModel()[13] -= cube.velocity;
+                if(cube.getModel()[13] <= -19){
+                    cube.velocity *= -((Math.random()*0.2)+0.5);
+                    cube.getModel()[13] = -19;
+                }
+            }
+        }
+
         placeObjectInfrontOfCamera(currentNew);
         float[] uVector = new float[4];
         headTransform.getUpVector(uVector,0);
 
         // Build the camera matrix and apply it to the ModelView.
         Matrix.setLookAtM(camera, 0, lookingZ[0], lookingZ[1], lookingZ[2], centerZ[0], centerZ[1], centerZ[2], 0.0f, 1.0f, 0.0f);
+        placeObjectInfrontOfCamera(currentNew);
 
         checkGLError("onReadyToDraw");
     }
@@ -635,6 +651,8 @@ public class OpenGlStuff {
     public class GLSelectableObject extends GLObject {
 
         private FloatBuffer cubeFoundColors;
+
+        public double velocity = 0;
 
         public GLSelectableObject(float xPos, float yPos, float zPos) {
             super(xPos, yPos, zPos);
