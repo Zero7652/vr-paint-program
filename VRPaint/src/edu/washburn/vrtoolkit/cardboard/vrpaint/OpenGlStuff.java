@@ -50,11 +50,6 @@ public class OpenGlStuff {
 
     private GLObject floor = new GLObject(0f, 20f, 0f);
     public List<GLSelectableObject> cubes = new ArrayList<GLSelectableObject>();
-    public GLSelectableObject currentNew = new GLSelectableObject(cubeCoords);
-
-    public GLSelectableObject currentOlder = new GLSelectableObject(0,0,0);
-    public GLSelectableObject currentOld = new GLSelectableObject(0,0,0);
-    public GLSelectableObject currentOldJR;
 
     public float[] camera = new float[16];
     public float[] view = new float[16];
@@ -222,31 +217,6 @@ public class OpenGlStuff {
     	}
     }
 
-    public void toastMode(int i){
-    	String toastString;
-    	switch(i){
-    	case 0:
-    		toastString = i+" No-Drawing Mode";
-    		break;
-    	case 1:
-    		toastString = i+" Free Draw!";
-    		break;
-    	case 2:
-    		toastString = i+" Straight Lines!";
-    		break;
-    	case 3:
-    		toastString = i+" Circles!";
-    		break;
-    	case 4:
-    		toastString = i+" Polygons!";
-    		break;
-    	default:
-    		toastString = i+" error occured";
-    		break;
-    	}
-        main.getOverlayView().show3DToast(toastString);
-    }
-
     public void selectMode(int drawingModeInt){
     	if(drawingModeInt >= 0 && drawingModeInt < Tools.values().length)
     		currentTool = Tools.values()[drawingModeInt];
@@ -344,10 +314,6 @@ public class OpenGlStuff {
         passthroughShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.passthrough_fragment);
 
 
-        currentNew = new GLSelectableObject(0f, 0f, 20f);
-
-        currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
-
         for (GLSelectableObject cube : cubes) {
             cube.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
         }
@@ -423,13 +389,11 @@ public class OpenGlStuff {
             }
         }
 
-        placeObjectInfrontOfCamera(currentNew);
         float[] uVector = new float[4];
         headTransform.getUpVector(uVector,0);
 
         // Build the camera matrix and apply it to the ModelView.
         Matrix.setLookAtM(camera, 0, lookingZ[0], lookingZ[1], lookingZ[2], centerZ[0], centerZ[1], centerZ[2], 0.0f, 1.0f, 0.0f);
-        placeObjectInfrontOfCamera(currentNew);
 
         checkGLError("onReadyToDraw");
     }
@@ -463,12 +427,6 @@ public class OpenGlStuff {
             Matrix.multiplyMM(modelView, 0, view, 0, cube.getModel(), 0);
             Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
             cube.drawCube();
-        }
-
-        if(currentNew != null){
-            Matrix.multiplyMM(modelView, 0, view, 0, currentNew.getModel(), 0);
-            Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-            currentNew.drawCube();
         }
 
         // Set modelView for the floor, so we draw floor in the correct location
@@ -731,10 +689,6 @@ public class OpenGlStuff {
             checkGLError("Drawing cube");
         }
     }
-
-	public void createNewObject() {
-		currentNew = new GLSelectableObject(cubeCoords);
-	}
 
 	public MainActivity getMain() {
 		return main;

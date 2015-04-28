@@ -43,7 +43,7 @@ public class ToolGeneric {
     	if(pressed){
 	        world.currentTool = world.currentTool.next();
 	        world.currentTool.getTool().register(world);
-	        world.toastMode(world.currentTool.ordinal());
+	        world.getMain().getOverlayView().show3DToast(world.currentTool.ordinal() + world.currentTool.getToolText());
 			return true;
     	}
 		return false;
@@ -53,7 +53,7 @@ public class ToolGeneric {
     	if(pressed){
 	        world.currentTool = world.currentTool.previous();
 	        world.currentTool.getTool().register(world);
-	        world.toastMode(world.currentTool.ordinal());
+	        world.getMain().getOverlayView().show3DToast(world.currentTool.ordinal() + world.currentTool.getToolText());
 			return true;
     	}
 		return false;
