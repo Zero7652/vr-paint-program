@@ -4,6 +4,11 @@ import com.google.vrtoolkit.cardboard.HeadTransform;
 
 public class FreeDrawTool extends ToolGeneric{
 
+	@Override
+    public boolean processButtonA(boolean pressed){
+    	moving = pressed;
+		return true;
+    }
 	
 	public void onNewFrame(HeadTransform headTransform){
 		if(moving){
