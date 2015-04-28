@@ -235,7 +235,11 @@ public class OpenGlStuff {
     }
 
     public void placeObjectInfrontOfCamera(GLObject moveObject) {
-        mvMult(moveObject.getModel(), 12, headView, cubeCoords);
+        float[] resultVector = new float[3];
+        mvMult(resultVector, headView, cubeCoords);
+        moveObject.getModel()[12] = resultVector[0] + -camera[12];
+        moveObject.getModel()[13] = resultVector[1] + -camera[13];
+        moveObject.getModel()[14] = resultVector[2] + -camera[14];
     }
 
     /**
