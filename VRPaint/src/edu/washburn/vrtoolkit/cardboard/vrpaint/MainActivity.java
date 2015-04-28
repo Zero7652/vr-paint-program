@@ -227,17 +227,17 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 		// the left control stick,
 		float x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_X, historyPos);
 		float y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
-        openGlStuff.moveUser(x,0,y);
+        openGlStuff.processLeftStick(x,y);
 
 		// right control stick
 		x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
 		y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
-        openGlStuff.processLeftStick(x, y);
+        openGlStuff.processRightStick(x, y);
 
 		// dpad
 		x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
 		y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
-        openGlStuff.moveUser(x, -y,0);
+        openGlStuff.processDpad(x, y);
 
 		// left and right triggers
 		x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_LTRIGGER, historyPos);

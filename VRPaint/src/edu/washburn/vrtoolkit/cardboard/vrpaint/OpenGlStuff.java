@@ -70,9 +70,6 @@ public class OpenGlStuff {
     public OpenGlStuff(MainActivity main) {
         this.main = main;
         currentTool.getTool().register(this);
-//        for(Tools tool : Tools.values()){
-//        	tool.getTool().register(this);
-//        }
     }
 
     public void processButtonStart(boolean pressed){
@@ -155,24 +152,25 @@ public class OpenGlStuff {
 
     public void processLeftStick(float x, float y){
     	if(!currentTool.getTool().processLeftStick(x, y)){
+        	moveUser(x,0,y);
+    	}
+    }
+
+    public void processRightStick(float x, float y){
+    	if(!currentTool.getTool().processRightStick(x, y)){
 	        if(Math.abs(cubeCoords[0]+ x)<15){
 	            cubeCoords[0]= cubeCoords[0] + x;
 	        }
 	        if(Math.abs(cubeCoords[1]- y)<15){
 	            cubeCoords[1]= cubeCoords[1] - y;
 	        }
-    	}
-    }
-
-    public void processRightStick(float x, float y){
-    	if(!currentTool.getTool().processRightStick(x, y)){
     		
     	}
     }
 
     public void processDpad(float x, float y){
     	if(!currentTool.getTool().processDpad(x, y)){
-    		
+    		moveUser(x, -y,0);
     	}
     }
 
@@ -205,6 +203,7 @@ public class OpenGlStuff {
     	lookingZ[0] = lookingZ[0] + resultVector[0];
     	lookingZ[1] = lookingZ[1] + resultVector[1];
     	lookingZ[2] = lookingZ[2] + resultVector[2];
+    	placeObjectInfrontOfCamera(currentNew);
     }
     
     public void moveCursor(double i, double j, double k) {
@@ -416,7 +415,6 @@ public class OpenGlStuff {
 
         // Build the camera matrix and apply it to the ModelView.
         Matrix.setLookAtM(camera, 0, lookingZ[0], lookingZ[1], lookingZ[2], centerZ[0], centerZ[1], centerZ[2], 0.0f, 1.0f, 0.0f);
-        placeObjectInfrontOfCamera(currentNew);
 
         checkGLError("onReadyToDraw");
     }
