@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2014 Google Inc. All Rights Reserved.
 
@@ -43,8 +44,6 @@ import com.google.vrtoolkit.cardboard.samples.treasurehunt.R;
  */
 public class MainActivity extends CardboardActivity implements CardboardView.StereoRenderer {
 
-	private int score = 0;
-
 	private Vibrator vibrator;
 	private CardboardOverlayView overlayView;
 	private OpenGlStuff openGlStuff;
@@ -69,9 +68,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 		vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
 		overlayView = (CardboardOverlayView) findViewById(R.id.overlay);
-		// overlayView.show3DToast("Pull the magnet when you find an object.");
 		runThread();
-		// controllerThread(MainActivity.this);
 	}
 
 	@Override
@@ -132,18 +129,19 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 	@Override
 	public void onCardboardTrigger() {
 		Log.i(OpenGlStuff.TAG, "onCardboardTrigger");
-		processTrigger();
+		vibrator.vibrate(50);
+		overlayView.show3DToast("Cardboard Trigger not available");
 	}
 
 	// ///////////N E T W O R K /////////////S O C K E T ////////////C O D E Z Z
-	// Z Z
 	public void runThread() {
 		Thread tr = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					// s=new Socket("172.18.65.29",5009);
-					s = new Socket("192.168.3.2", 5009);
+					s = new Socket("172.18.3.206", 5009);
+					// s=new Socket("172.18.83.64",5009);
+					// s=new Socket("192.168.3.2",5009);
 					in = new BufferedReader(new InputStreamReader(s.getInputStream()));
 					while (true) {
 						while ((line = in.readLine()) != null) {
@@ -165,21 +163,21 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 				vibrator.vibrate(50);
 
 				if (line.equals("7"))
-					openGlStuff.moveCursor(-0.5, 0.5);
+					openGlStuff.processLeftStick(-0.5f, 0.5f);
 				if (line.equals("8"))
-					openGlStuff.moveCursor(0, 0.5);
+					openGlStuff.processLeftStick(0, 0.5f);
 				if (line.equals("9"))
-					openGlStuff.moveCursor(0.5, 0.5);
+					openGlStuff.processLeftStick(0.5f, 0.5f);
 				if (line.equals("4"))
-					openGlStuff.moveCursor(-0.5, 0);
+					openGlStuff.processLeftStick(-0.5f, 0);
 				if (line.equals("6"))
-					openGlStuff.moveCursor(0.5, 0);
+					openGlStuff.processLeftStick(0.5f, 0);
 				if (line.equals("1"))
-					openGlStuff.moveCursor(-0.5, -0.5);
+					openGlStuff.processLeftStick(-0.5f, -0.5f);
 				if (line.equals("2"))
-					openGlStuff.moveCursor(0, -0.5);
+					openGlStuff.processLeftStick(0, -0.5f);
 				if (line.equals("3"))
-					openGlStuff.moveCursor(0.5, -0.5);
+					openGlStuff.processLeftStick(0.5f, -0.5f);
 				if (line.equals("f"))
 					openGlStuff.selectMode(1);
 				if (line.equals("l"))
@@ -191,33 +189,18 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 				if (line.equals("e"))
 					openGlStuff.selectMode(0);
 				if (line.equals("5") && openGlStuff.drawing == false) {
-					openGlStuff.drawStuff(true);
+					openGlStuff.drawing = true;
 				} else {
-					openGlStuff.drawStuff(false);
+					openGlStuff.drawing = false;
 				}
 			}
 		});
 	}
 
-	private void processTrigger() {
-		edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff.GLSelectableObject cube;
-		if ((cube = openGlStuff.isLookingAtObject()) != null) {
-			score++;
-			// overlayView.show3DToast("Found it! Look around for another one.\nScore = "
-			// + score);
-			openGlStuff.hideObject(cube);
-		} else {
-			// overlayView.show3DToast("Look around to find the object!");
-		}
-
-		// Always give user feedback.
-		vibrator.vibrate(50);
-	}
-
 	@Override
 	public boolean dispatchGenericMotionEvent(MotionEvent event) {
 		// Check that the event came from a game controller
-		if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) {
+		if ((event.getSource() & InputDevice.SOURCE_UNKNOWN) == InputDevice.SOURCE_UNKNOWN) {
 
 			// Process all historical movement samples in the batch
 			final int historySize = event.getHistorySize();
@@ -241,29 +224,26 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
 		// Calculate the horizontal distance to move by
 		// using the input value from one of these physical controls:
-		// the left control stick, hat axis, or the right control stick.
+		// the left control stick,
 		float x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_X, historyPos);
 		float y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Y, historyPos);
+        openGlStuff.processLeftStick(x,y);
 
-		openGlStuff.processMove(x, y);
-		{
-			x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
-			y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
-		}
-		{
-			x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
-			y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
-		}
-		{
-			x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RTRIGGER, historyPos);
-			y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_LTRIGGER, historyPos);
-		}
+		// right control stick
+		x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_Z, historyPos);
+		y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RZ, historyPos);
+        openGlStuff.processRightStick(x, y);
 
+		// dpad
+		x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
+		y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
+        openGlStuff.processDpad(x, y);
+
+		// left and right triggers
+		x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_LTRIGGER, historyPos);
+		y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_RTRIGGER, historyPos);
+		openGlStuff.processTriggers(x, y);
 	}
-
-	// jason kopecky
-	// american family insurance
-	// po box 2570 meryland heights mo 63043
 
 	private static float getCenteredAxis(MotionEvent event, InputDevice device, int axis, int historyPos) {
 		final InputDevice.MotionRange range = device.getMotionRange(axis, event.getSource());
@@ -286,42 +266,69 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent event) {
-		boolean handled = true;
+		boolean handled = false;
 		if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
-			// if (event.getRepeatCount() == 0 && event.getAction() ==
-			// KeyEvent.ACTION_DOWN) {
-			int keyCode = event.getKeyCode();
-
-			Log.i(OpenGlStuff.TAG, "" + keyCode);
-			switch (keyCode) {
-			case KeyEvent.KEYCODE_BUTTON_X:
-				openGlStuff.buttonX(event.getAction() == KeyEvent.ACTION_DOWN);
-				break;
-			case KeyEvent.KEYCODE_BUTTON_A:
-
-				break;
-			case KeyEvent.KEYCODE_BUTTON_R1:
-				openGlStuff.buttonR1(event.getAction() == KeyEvent.ACTION_DOWN);
-				break;
-			case KeyEvent.KEYCODE_BUTTON_L1:
-				openGlStuff.buttonL1(event.getAction() == KeyEvent.ACTION_DOWN);
-				break;
-			default:
-				handled = false;
-				if (CardboardOverlayView.isFireKey(keyCode)) {
-					// Update the ship object to fire lasers
-
-					Log.i(OpenGlStuff.TAG, "on SOURCE_GAMEPAD");
-
-					// processTrigger();
+			handled = true;
+			if (event.getRepeatCount() == 0) {
+				if(event.getAction() == KeyEvent.ACTION_DOWN)
+					vibrator.vibrate(50);
+				switch (event.getKeyCode()) {
+				case KeyEvent.KEYCODE_BUTTON_X:
+				case 188: // -> X <- B U T T O N
+					openGlStuff.processButtonX(event.getAction() == KeyEvent.ACTION_DOWN);
+					break;
+				case KeyEvent.KEYCODE_BUTTON_Y:
+				case 191: // -> Y <- B U T T O N
+					openGlStuff.processButtonY(event.getAction() == KeyEvent.ACTION_DOWN);
+					break;
+				case KeyEvent.KEYCODE_BUTTON_A:
+				case 189: // -> A <- B U T T O N
+					openGlStuff.processButtonA(event.getAction() == KeyEvent.ACTION_DOWN);
+					break;
+				case KeyEvent.KEYCODE_BUTTON_B:
+				case 190: // -> B <- B U T T O N
+					openGlStuff.processButtonB(event.getAction() == KeyEvent.ACTION_DOWN);
+					break;
+				case KeyEvent.KEYCODE_BACK:
+				case KeyEvent.KEYCODE_BUTTON_SELECT:
+				case 196: // -> Select <- B U T T O N
+					openGlStuff.processButtonSelect(event.getAction() == KeyEvent.ACTION_DOWN);
+					break;
+				case KeyEvent.KEYCODE_BUTTON_START:
+				case 197: // -> Start <- B U T T O N
+					openGlStuff.processButtonStart(event.getAction() == KeyEvent.ACTION_DOWN);
+					break;
+				case KeyEvent.KEYCODE_BUTTON_L1:
+				case 192: // -> TL <- B U T T O N
+					openGlStuff.processButtonL1(event.getAction() == KeyEvent.ACTION_DOWN);
+					break;
+				case KeyEvent.KEYCODE_BUTTON_R1:
+				case 193: // -> TR <- B U T T O N
+					openGlStuff.processButtonR1(event.getAction() == KeyEvent.ACTION_DOWN);
+					break;
+				case KeyEvent.KEYCODE_BUTTON_L2:
+				case 194: // -> BL <- B U T T O N
+					openGlStuff.processButtonL2(event.getAction() == KeyEvent.ACTION_DOWN);
+					break;
+				case KeyEvent.KEYCODE_BUTTON_R2:
+				case 195: // -> BR <- B U T T O N
+					openGlStuff.processButtonR2(event.getAction() == KeyEvent.ACTION_DOWN);
+					break;
+				case KeyEvent.KEYCODE_BUTTON_THUMBL:
+				case 198: // -> Left <- A N A L O G U E S T I C K
+					openGlStuff.processButtonL3(event.getAction() == KeyEvent.ACTION_DOWN);
+					break;
+				case KeyEvent.KEYCODE_BUTTON_THUMBR:
+				case 199: // -> Right <- A N A L O G U E S T I C K
+					openGlStuff.processButtonR3(event.getAction() == KeyEvent.ACTION_DOWN);
+					break;
+				default:
+					handled = false;
+					break;
 				}
-				break;
 			}
 		}
-		if (handled) {
-			return true;
-		}
-		return super.dispatchKeyEvent(event);
+		return handled ? true : super.dispatchKeyEvent(event);
 	}
 
 	public CardboardOverlayView getOverlayView() {
