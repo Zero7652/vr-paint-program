@@ -414,12 +414,13 @@ public class OpenGlStuff {
         if(isFalling){
             for(GLSelectableObject cube : cubes){
                 cube.velocity += GRAVITY;
-                // cube.xVelocity *= 0.9;
-                // cube.x += cube.xVelocity;
                 cube.getModel()[13] -= cube.velocity;
                 if(cube.getModel()[13] <= -19){
-                    cube.velocity *= -((Math.random()*0.2)+0.5);
+                    cube.velocity *= -((Math.random()*0.2)+0.45);
                     cube.getModel()[13] = -19;
+                    double rand = randInterval(-cube.velocity*2,cube.velocity*2);
+                    cube.getModel()[12] -= rand;
+                    cube.getModel()[14] -= rand;
                 }
             }
         }
@@ -433,6 +434,11 @@ public class OpenGlStuff {
         placeObjectInfrontOfCamera(currentNew);
 
         checkGLError("onReadyToDraw");
+    }
+
+    private double randInterval(double min,double max)
+    {
+        return Math.floor(Math.random()*(max-min+1)+min);
     }
 
     /**
