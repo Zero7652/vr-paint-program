@@ -8,7 +8,7 @@ public class OpenGlControl {
 		NOT_DRAWING(new ToolGeneric()),
 		FREE_DRAWING(new FreeDrawTool()),
 		LINE(new LineTool()),
-		CIRCLE(new ToolGeneric()),
+		CIRCLE(new CircleTool()),
 		POLYGON(new ToolGeneric());
 
 		private final ToolGeneric tool;

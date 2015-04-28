@@ -67,14 +67,11 @@ public class OpenGlStuff {
     public GLSelectableObject currentOld = new GLSelectableObject(0,0,0);
     public GLSelectableObject currentOldJR;
 
-    private float[] camera = new float[16];
+    public float[] camera = new float[16];
     public float[] view = new float[16];
-    private float[] headView = new float[16];
+    public float[] headView = new float[16];
     public float[] modelViewProjection = new float[16];
     public float[] modelView = new float[16];
-    private float[] centerZ = {0,0,0};
-    private float[] lookingZ = {Eyes[0],Eyes[1],CAMERA_Z};
-    private float[] locationZ = new float[3];
 
     private MainActivity main;
 
@@ -100,44 +97,10 @@ public class OpenGlStuff {
         main.getOverlayView().show3DToast("No-Drawing Mode");
     }
 
-    public void moveUser(float xZ, float yZ, float zZ) {
-        float[] resultVector = {xZ, yZ, zZ};
-        mvMult(resultVector, headView, resultVector);
-        centerZ[0] = centerZ[0] + resultVector[0];
-        centerZ[1] = centerZ[1] + resultVector[1];
-        centerZ[2] = centerZ[2] + resultVector[2];
-        lookingZ[0] = lookingZ[0] + resultVector[0];
-        lookingZ[1] = lookingZ[1] + resultVector[1];
-        lookingZ[2] = lookingZ[2] + resultVector[2];
-        placeObjectInfrontOfCamera(currentNew);
-    }
-
     public void processButtonY(boolean pressed){
     	currentTool.getTool().processButtonY(pressed);
     }
 
-    public void centerUser(){
-        centerZ[0] = 0.0f;
-        centerZ[1] = 0.0f;
-        centerZ[2] = 0.0f;
-        lookingZ[0] = 0.0f;
-        lookingZ[1] = 0.0f;
-        lookingZ[2] = 0.1f;
-    }
-
-    public void moveCursor(double i, double j, double k) {
-        double limitZ = cubeCoords[2] / Math.sqrt(3);
-        if (Math.abs(cubeCoords[0] + (float) i) < Math.abs(limitZ)) {
-            cubeCoords[0] = cubeCoords[0] + (float) i;
-        }
-        if (Math.abs(cubeCoords[1] - (float) j) < Math.abs(limitZ)) {
-            cubeCoords[1] = cubeCoords[1] - (float) j;
-        }
-        if (((cubeCoords[2] + (float) k) <= 80) || ((cubeCoords[2] - (float) k) <= 1)) {
-            cubeCoords[2] = cubeCoords[2] + (float) k;
-            //System.out.println("Zcoord: " + cubeCoords[2]);
-        }
-    }
     public void processButtonA(boolean pressed){
     	currentTool.getTool().processButtonA(pressed);
     	 if(currentTool.ordinal() != Tools.NOT_DRAWING.ordinal()) {
@@ -151,17 +114,6 @@ public class OpenGlStuff {
     	currentTool.getTool().processButtonB(pressed);
     }
 
-    public void createObject(){
-        double cubeDistance = Math.sqrt(
-                ((currentOld.getModel()[12] - currentNew.getModel()[12])*(currentOld.getModel()[12] - currentNew.getModel()[12])) +
-                        ((currentOld.getModel()[13] - currentNew.getModel()[13])*(currentOld.getModel()[13] - currentNew.getModel()[13])) +
-                        ((currentOld.getModel()[14] - currentNew.getModel()[14])*(currentOld.getModel()[14] - currentNew.getModel()[14]))
-        );
-        if(cubeDistance < 1) return;
-        placeObjectInfrontOfCamera(currentNew);
-        currentOld = currentNew;
-        cubes.add(currentOld);
-    }
     public void processButtonR1(boolean pressed){
     	currentTool.getTool().processButtonR1(pressed);
 //    	if(pressed){
@@ -194,12 +146,11 @@ public class OpenGlStuff {
 
     public void processButtonR3(boolean pressed){
     	currentTool.getTool().processButtonR3(pressed);
-        centerCursor();
     }
 
     public void processButtonL3(boolean pressed){
     	currentTool.getTool().processButtonL3(pressed);
-        centerUser();
+    	centerCursor();
     }
 
     public void processLeftStick(float x, float y){
@@ -223,6 +174,22 @@ public class OpenGlStuff {
     public void centerCursor(){
     	cubeCoords[0] = 0;
     	cubeCoords[1] = 0;
+    }
+    
+    public void createObject(){
+    	double cubeDistance = Math.sqrt(
+    			((currentOld.getModel()[12] - currentNew.getModel()[12])*(currentOld.getModel()[12] - currentNew.getModel()[12])) +
+    			((currentOld.getModel()[13] - currentNew.getModel()[13])*(currentOld.getModel()[13] - currentNew.getModel()[13])) +
+    			((currentOld.getModel()[14] - currentNew.getModel()[14])*(currentOld.getModel()[14] - currentNew.getModel()[14]))
+    			);
+    	if(cubeDistance < 1) return;
+    	placeObjectInfrontOfCamera(currentNew);
+    	currentOld = currentNew;
+    	cubes.add(currentOld);
+    	
+    	currentNew = new GLSelectableObject(cubeCoords);
+    	
+    	currentNew.onSurfaceCreated(vertexShader, gridShader, passthroughShader);
     }
 
     public void toastMode(int i){
@@ -315,155 +282,8 @@ public class OpenGlStuff {
         return;
     }
 
-    float[] hView = new float[16];
-    private void createCircle(int test)
-    {
-        if(test==1) {
-            placeObjectInfrontOfCamera(currentNew);
-            currentOld = currentNew;
-            hView = headView;
-            cubes.add(currentOld);
-
-            currentNew = new GLSelectableObject(cubeCoords);
-            currentNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
-            drawingMode = CIRCLE_END;
-            return;
-        }
-        if(test==2){
-
-            placeObjectInfrontOfCamera(currentNew);
-            currentOldJR = currentNew;
-            cubes.add(currentOldJR);
-
-            currentNew = new GLSelectableObject(cubeCoords);
-
-            currentNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
-            createCircle(currentOld, currentOldJR, hView);
-            return;
-        }
-    }
-
-    private void createCircle(GLSelectableObject cube1, GLSelectableObject cube2, float[] h){
-        float[] circleVector = {
-                cube1.getModel()[12] - cube2.getModel()[12],
-                cube1.getModel()[13] - cube2.getModel()[13],
-                cube1.getModel()[14] - cube2.getModel()[14]
-        };
-        double cubeDistance = Math.sqrt(
-                (circleVector[0]*circleVector[0]) +
-                        (circleVector[1]*circleVector[1]) +
-                        (circleVector[2]*circleVector[2])
-        );
-        if(cubeDistance<0.7) return;
-
-        float[] cCoord3 = {0,(float)cubeDistance,0};
-        float[] resultVector = new float[3];
-        float[] resultVector2 = new float[3];
-        mvMult(resultVector, h, cCoord3);
-        GLSelectableObject cube4 = new GLSelectableObject(cubeCoords);
-        cube4.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
-        cube4.getModel()[12] = cube1.getModel()[12]+ resultVector[0];
-        cube4.getModel()[13] = cube1.getModel()[13]+ resultVector[1];
-        cube4.getModel()[14] = cube1.getModel()[14]+ resultVector[2];
-        cubes.add(cube4);
-
-        float[] cCoord4 = {0,(float)-cubeDistance,0};
-        mvMult(resultVector, h, cCoord4);
-        GLSelectableObject cube5 = new GLSelectableObject(cubeCoords);
-        cube5.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
-        cube5.getModel()[12] = cube1.getModel()[12]+ resultVector[0];
-        cube5.getModel()[13] = cube1.getModel()[13]+ resultVector[1];
-        cube5.getModel()[14] = cube1.getModel()[14]+ resultVector[2];
-        cubes.add(cube5);
-
-        float[] cCoord = {(float)cubeDistance,0,0};
-        mvMult(resultVector, h, cCoord);
-        cube2.getModel()[12] = cube1.getModel()[12]+ resultVector[0];
-        cube2.getModel()[13] = cube1.getModel()[13]+ resultVector[1];
-        cube2.getModel()[14] = cube1.getModel()[14]+ resultVector[2];
-        cubes.add(cube2);
-
-
-        float[] cCoord2 = {(float)-cubeDistance,0,0};
-        mvMult(resultVector2, h, cCoord2);
-        GLSelectableObject cube3 = new GLSelectableObject(cubeCoords);
-        cube3.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
-        cube3.getModel()[12] = cube1.getModel()[12]+ resultVector2[0];
-        cube3.getModel()[13] = cube1.getModel()[13]+ resultVector2[1];
-        cube3.getModel()[14] = cube1.getModel()[14]+ resultVector2[2];
-        cubes.add(cube3);
-        float[] origin = {cube1.getModel()[12],cube1.getModel()[13],cube1.getModel()[14]};
-        cubes.remove(cube1);
-
-        createArc2(cCoord, cCoord3, cCoord, origin,hView, (float)cubeDistance);
-    }
-
-    private void createArc2(float[] cube1, float[] cube2, float[] start, float[] o, float[] hVZ, float radiusZ){
-        double cubeDistance = Math.sqrt(
-                ((cube1[0] - cube2[0])*(cube1[0] - cube2[0])) +
-                        ((cube1[1] - cube2[1])*(cube1[1] - cube2[1])) +
-                        ((cube1[2] - cube2[2])*(cube1[2] - cube2[2]))
-        );
-        if(cubeDistance < 2) return;
-        float[] resultVector = new float[3];
-        GLSelectableObject cubeNew;
-
-        float dot = start[0] * cube1[0] + start[1] * cube1[1];
-        float det = start[0] * cube1[1] - start[1] * cube1[0];
-        double angle1 = Math.atan2(det,dot);
-        dot = start[0] * cube2[0] + start[1] * cube2[1];
-        det = start[0] * cube2[1] - start[1] * cube2[0];
-        double angle2 = Math.atan2(det,dot);
-        double angle = (angle1+angle2)/2;
-
-        Log.i(OpenGlStuff.TAG, "Angle: " + angle);
-        float[] mid = {(float)Math.cos(angle)*-radiusZ, (float)Math.sin(angle)*-radiusZ, 0};
-        mvMult(resultVector, hVZ, mid);
-        cubeNew = new GLSelectableObject(0,0,0);
-        cubeNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
-        cubeNew.getModel()[12] = o[0]+ resultVector[0];
-        cubeNew.getModel()[13] = o[1]+ resultVector[1];
-        cubeNew.getModel()[14] = o[2]+ resultVector[2];
-        cubes.add(cubeNew);
-
-        mid[0] = -1*mid[0];
-        mvMult(resultVector, hVZ, mid);
-        cubeNew = new GLSelectableObject(0,0,0);
-        cubeNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
-        cubeNew.getModel()[12] = o[0]+ resultVector[0];
-        cubeNew.getModel()[13] = o[1]+ resultVector[1];
-        cubeNew.getModel()[14] = o[2]+ resultVector[2];
-        cubes.add(cubeNew);
-
-        mid[0] = -1*mid[0];
-        mid[1] = -1*mid[1];
-        mvMult(resultVector, hVZ, mid);
-        cubeNew = new GLSelectableObject(0,0,0);
-        cubeNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
-        cubeNew.getModel()[12] = o[0]+ resultVector[0];
-        cubeNew.getModel()[13] = o[1]+ resultVector[1];
-        cubeNew.getModel()[14] = o[2]+ resultVector[2];
-        cubes.add(cubeNew);
-
-        mid[0] = -1*mid[0];
-        mvMult(resultVector, hVZ, mid);
-        cubeNew = new GLSelectableObject(0,0,0);
-        cubeNew.onSurfaceCreated(vertexShader, passthroughShader, passthroughShader);
-        cubeNew.getModel()[12] = o[0]+ resultVector[0];
-        cubeNew.getModel()[13] = o[1]+ resultVector[1];
-        cubeNew.getModel()[14] = o[2]+ resultVector[2];
-        cubes.add(cubeNew);
-
-        createArc2(cube1,mid,start,o,hVZ, radiusZ);
-        createArc2(mid,cube2,start,o,hVZ, radiusZ);
-    }
-
     public void placeObjectInfrontOfCamera(GLObject moveObject) {
-        float[] resultVector = new float[3];
-        mvMult(resultVector, headView, cubeCoords);
-        moveObject.getModel()[12] = resultVector[0] + -camera[12];
-        moveObject.getModel()[13] = resultVector[1] + -camera[13];
-        moveObject.getModel()[14] = resultVector[2] + -camera[14];
+        mvMult(moveObject.getModel(), 12, headView, cubeCoords);
     }
 
     /**
@@ -608,17 +428,8 @@ public class OpenGlStuff {
             }
         }
 
-        if(currentTool.ordinal() == Tools.FREE_DRAWING.ordinal() || currentTool.ordinal() == Tools.LINE.ordinal()){
+        if(currentTool.ordinal() == Tools.FREE_DRAWING.ordinal() || currentTool.ordinal() == Tools.LINE.ordinal() || currentTool.ordinal() == Tools.CIRCLE.ordinal()){
             currentTool.getTool().onNewFrame(headTransform);
-        }
-        if(drawingMode==CIRCLE && drawing==true) {
-            createCircle(1);
-            drawing = false;
-        }
-        if(drawingMode==CIRCLE_END && drawing==true) {
-            createCircle(2);
-            drawing = false;
-            drawingMode=CIRCLE;
         }
         if(drawingMode==POLYGON && drawing==true){
             createLine(1);
