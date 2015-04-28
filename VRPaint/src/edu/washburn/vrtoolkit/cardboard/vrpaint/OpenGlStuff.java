@@ -725,4 +725,12 @@ public class OpenGlStuff {
 	public void createNewObject() {
 		currentNew = new GLSelectableObject(cubeCoords);
 	}
+
+	public MainActivity getMain() {
+		return main;
+	}
+
+	public void setMain(MainActivity main) {
+		this.main = main;
+	}
 }
