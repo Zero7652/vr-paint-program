@@ -81,8 +81,8 @@ public class ToolGeneric {
 	}
 	
 	public void onNewFrame(HeadTransform headTransform){
-		if(moving)
-			world.createObject();
+//		if(moving)
+//			world.createObject();
 
 //    	double cubeDistance = Math.sqrt(
 //    			((currentOld.getModel()[12] - currentNew.getModel()[12])*(currentOld.getModel()[12] - currentNew.getModel()[12])) +
