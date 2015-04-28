@@ -237,7 +237,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 		// dpad
 		x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_X, historyPos);
 		y = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_HAT_Y, historyPos);
-        openGlStuff.moveUser(x, y,0);
+        openGlStuff.moveUser(x, -y,0);
 
 		// left and right triggers
 		x = getCenteredAxis(event, mInputDevice, MotionEvent.AXIS_LTRIGGER, historyPos);
