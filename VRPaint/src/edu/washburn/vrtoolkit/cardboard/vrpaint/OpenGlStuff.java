@@ -407,9 +407,7 @@ public class OpenGlStuff {
             }
         }
 
-        if(currentTool.ordinal() == Tools.FREE_DRAWING.ordinal() || currentTool.ordinal() == Tools.LINE.ordinal() || currentTool.ordinal() == Tools.CIRCLE.ordinal()){
-            currentTool.getTool().onNewFrame(headTransform);
-        }
+        currentTool.getTool().onNewFrame(headTransform);
 
         if(isFalling){
             for(GLSelectableObject cube : cubes){
@@ -652,6 +650,12 @@ public class OpenGlStuff {
         public void setDistance(float distance) {
             this.zPos = distance;
         }
+		public int getProgram() {
+			return program;
+		}
+		public void setProgram(int program) {
+			this.program = program;
+		}
     }
 
     public class GLSelectableObject extends GLObject {

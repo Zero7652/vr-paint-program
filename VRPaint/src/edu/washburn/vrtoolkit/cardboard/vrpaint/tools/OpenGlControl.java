@@ -9,7 +9,8 @@ public class OpenGlControl {
 		FREE_DRAWING(new FreeDrawTool()),
 		LINE(new LineTool()),
 		CIRCLE(new CircleTool()),
-		POLYGON(new ToolGeneric());
+		POLYGON(new ToolGeneric()),
+		SAVE(new SaveTool());
 
 		private final ToolGeneric tool;
 		private static Tools[] vals = values();
