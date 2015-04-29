@@ -10,6 +10,7 @@ public class OpenGlControl {
 		LINE("Line Drawing Mode", new LineTool()),
 		CIRCLE("Circle Drawing Mode", new CircleTool()),
 		POLYGON("Polygon Drawing Mode", new PolygonTool()),
+		BURST("Starburst Drawing Mode", new StarburstTool()),
 		SAVE("Save Drawing Mode", new SaveTool());
 
 		private final String toolText;
