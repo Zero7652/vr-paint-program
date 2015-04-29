@@ -9,17 +9,13 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.microedition.khronos.egl.EGLConfig;
-
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
-
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.samples.treasurehunt.R;
-
 import edu.washburn.vrtoolkit.cardboard.vrpaint.tools.OpenGlControl.Tools;
 
 public class OpenGlStuff {
@@ -28,18 +24,17 @@ public class OpenGlStuff {
     public static final float Z_NEAR = 0.1f;
     public static final float Z_FAR = 100.0f;
     private static final float CAMERA_Z = 0.01f;
-    private static final float TIME_DELTA = 0.3f;
     private static final float YAW_LIMIT = 0.05f;
     private static final float PITCH_LIMIT = 0.05f;
     private static final int COORDS_PER_VERTEX = 3;
-
-
-    // We keep the light always position just above the user.
+    private static final double GRAVITY = 0.25;
+    
+    // light position just above the user.
     private static final float[] LIGHT_POS_IN_WORLD_SPACE = new float[] { 0.0f, 2.0f, 0.0f, 1.0f };
-    private float[] Eyes = new float[] { 0f, 0f };
-    private final float[] lightPosInEyeSpace = new float[4];
-    public float[] cubeCoords = {0f,0f,-20f};
 
+
+    private boolean isFalling = false;
+    private MainActivity main;
     public int vertexShader;
     public int gridShader;
     public int passthroughShader;
@@ -51,6 +46,9 @@ public class OpenGlStuff {
     private GLObject floor = new GLObject(0f, 20f, 0f);
     public List<GLSelectableObject> cubes = new ArrayList<GLSelectableObject>();
 
+    private float[] Eyes = new float[] { 0f, 0f };
+    private final float[] lightPosInEyeSpace = new float[4];
+    public float[] cubeCoords = {0f,0f,-20f};
     public float[] camera = new float[16];
     public float[] view = new float[16];
     public float[] headView = new float[16];
@@ -58,12 +56,22 @@ public class OpenGlStuff {
     public float[] modelView = new float[16];
     private float[] centerZ = {0,0,0};
     private float[] lookingZ = {Eyes[0],Eyes[1],CAMERA_Z};
-    private float[] locationZ = new float[3];
 
-    private static final double GRAVITY = 0.25;
-    private boolean isFalling = false;
+    public void printMatrix(float[] matrix) {
+        for (int i = 0; i < 4; i++)
+            Log.i("TEST", "|" + String.format("%.3f", matrix[i * 4]) + "|" + "" + String.format("%.3f", matrix[i * 4 + 1]) + "|" + "" + String.format("%.3f", matrix[i * 4 + 2])
+                    + "|" + "" + String.format("%.3f", matrix[i * 4 + 3]) + "|");
+        Log.i("TEST", "End");
+    }
 
-    private MainActivity main;
+    public void mvMult(float a[], int offset, float b[], float c[]) {
+        a[offset    ] = b[0] * c[0] + b[1] * c[1] + b[2 ] * c[2];
+        a[offset + 1] = b[4] * c[0] + b[5] * c[1] + b[6 ] * c[2];
+        a[offset + 2] = b[8] * c[0] + b[9] * c[1] + b[10] * c[2];
+    }
+//    public void placeObjectInfrontOfCamera(GLObject moveObject) {
+//        mvMult(moveObject.getModel(), 12, headView, cubeCoords);
+//    }
 
     public OpenGlStuff(MainActivity main) {
         this.main = main;
@@ -72,13 +80,13 @@ public class OpenGlStuff {
 
     public void processButtonStart(boolean pressed){
     	if(!currentTool.getTool().processButtonStart(pressed)){
-    		
+
     	}
     }
 
     public void processButtonSelect(boolean pressed){
     	if(!currentTool.getTool().processButtonSelect(pressed)){
-    		
+
     	}
     }
 
@@ -92,7 +100,7 @@ public class OpenGlStuff {
 
     public void processButtonY(boolean pressed){
     	if(!currentTool.getTool().processButtonY(pressed)){
-    		
+
     	}
     }
 
@@ -114,7 +122,7 @@ public class OpenGlStuff {
 
     public void processButtonR1(boolean pressed){
     	if(!currentTool.getTool().processButtonR1(pressed)){
-    		
+
     	}
     }
 
@@ -155,14 +163,14 @@ public class OpenGlStuff {
     }
 
     public void processRightStick(float x, float y){
+        double limitZ = cubeCoords[2] / Math.sqrt(3);
     	if(!currentTool.getTool().processRightStick(x, y)){
-	        if(Math.abs(cubeCoords[0]+ x)<15){
+	        if(Math.abs(cubeCoords[0]+ x)<Math.abs(limitZ)){
 	            cubeCoords[0]= cubeCoords[0] + x;
 	        }
-	        if(Math.abs(cubeCoords[1]- y)<15){
+	        if(Math.abs(cubeCoords[1]- y)<Math.abs(limitZ)){
 	            cubeCoords[1]= cubeCoords[1] - y;
 	        }
-    		
     	}
     }
 
@@ -202,20 +210,6 @@ public class OpenGlStuff {
     	lookingZ[1] = lookingZ[1] + resultVector[1];
     	lookingZ[2] = lookingZ[2] + resultVector[2];
     }
-    
-    public void moveCursor(double i, double j, double k) {
-    	double limitZ = cubeCoords[2] / Math.sqrt(3);
-    	if (Math.abs(cubeCoords[0] + (float) i) < Math.abs(limitZ)) {
-    		cubeCoords[0] = cubeCoords[0] + (float) i;
-    	}
-    	if (Math.abs(cubeCoords[1] - (float) j) < Math.abs(limitZ)) {
-    		cubeCoords[1] = cubeCoords[1] - (float) j;
-    	}
-    	if (((cubeCoords[2] + (float) k) <= 80) || ((cubeCoords[2] - (float) k) <= 1)) {
-    		cubeCoords[2] = cubeCoords[2] + (float) k;
-    		//System.out.println("Zcoord: " + cubeCoords[2]);
-    	}
-    }
 
     public void selectMode(int drawingModeInt){
     	if(drawingModeInt >= 0 && drawingModeInt < Tools.values().length)
@@ -231,9 +225,6 @@ public class OpenGlStuff {
         moveObject.getModel()[13] = resultVector[1] + -camera[13];
         moveObject.getModel()[14] = resultVector[2] + -camera[14];
     }
-//    public void placeObjectInfrontOfCamera(GLObject moveObject) {
-//        mvMult(moveObject.getModel(), 12, headView, cubeCoords);
-//    }
 
     /**
      * Converts a raw text file, saved as a resource, into an OpenGL ES shader.
@@ -265,7 +256,6 @@ public class OpenGlStuff {
         if (shader == 0) {
             throw new RuntimeException("Error creating shader.");
         }
-
         return shader;
     }
 
@@ -293,7 +283,6 @@ public class OpenGlStuff {
         }
         return null;
     }
-
     /**
      * Creates the buffers we use to store information about the 3D world.
      *
@@ -306,8 +295,7 @@ public class OpenGlStuff {
      */
     public void onSurfaceCreated(EGLConfig config) {
         Log.i(TAG, "onSurfaceCreated");
-        GLES20.glClearColor(0.8f, 0.8f, 0.8f, 0.5f); // Dark background so text
-        // shows up well.
+        GLES20.glClearColor(0.8f, 0.8f, 0.8f, 0.5f); // Dark background so text shows up well.
 
         vertexShader = loadGLShader(GLES20.GL_VERTEX_SHADER, R.raw.light_vertex);
         gridShader = loadGLShader(GLES20.GL_FRAGMENT_SHADER, R.raw.grid_fragment);
@@ -339,29 +327,14 @@ public class OpenGlStuff {
         }
     }
 
-    public void printMatrix(float[] matrix) {
-        for (int i = 0; i < 4; i++)
-            Log.i("TEST", "|" + String.format("%.3f", matrix[i * 4]) + "|" + "" + String.format("%.3f", matrix[i * 4 + 1]) + "|" + "" + String.format("%.3f", matrix[i * 4 + 2])
-                    + "|" + "" + String.format("%.3f", matrix[i * 4 + 3]) + "|");
-        Log.i("TEST", "End");
-    }
-
     public void mvMult(float a[], float b[], float c[]) {
         a[0] = b[0] * c[0] + b[1] * c[1] + b[2] * c[2];
         a[1] = b[4] * c[0] + b[5] * c[1] + b[6] * c[2];
         a[2] = b[8] * c[0] + b[9] * c[1] + b[10] * c[2];
     }
 
-    public void mvMult(float a[], int offset, float b[], float c[]) {
-        a[offset    ] = b[0] * c[0] + b[1] * c[1] + b[2 ] * c[2];
-        a[offset + 1] = b[4] * c[0] + b[5] * c[1] + b[6 ] * c[2];
-        a[offset + 2] = b[8] * c[0] + b[9] * c[1] + b[10] * c[2];
-    }
-
-
     public void onNewFrame(HeadTransform headTransform) {
         headTransform.getHeadView(headView, 0);
-        // Build the camera matrix and apply it to the ModelView.
         Matrix.setLookAtM(camera, 0, lookingZ[0], lookingZ[1], lookingZ[2], centerZ[0], centerZ[1], centerZ[2], 0.0f, 1.0f, 0.0f);
 
         if(l2Pressed){
@@ -390,6 +363,11 @@ public class OpenGlStuff {
                 }
             }
         }
+
+        float[] uVector = new float[4];
+        headTransform.getUpVector(uVector,0);
+
+        // Build the camera matrix and apply it to the ModelView.
 
         checkGLError("onReadyToDraw");
     }
@@ -474,7 +452,6 @@ public class OpenGlStuff {
         protected FloatBuffer normals;
 
         protected int program;
-
         protected int positionParam;
         protected int normalParam;
         protected int colorParam;
@@ -594,7 +571,6 @@ public class OpenGlStuff {
         public void setModel(float[] modelFloor) {
             for (int k = 0; k > modelFloor.length; k++)
                 model[k] = modelFloor[k];
-            // this.model = modelFloor;
         }
 
         public float getDistance() {

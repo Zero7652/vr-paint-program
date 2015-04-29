@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2014 Google Inc. All Rights Reserved.
 
@@ -68,7 +67,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 		vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
 		overlayView = (CardboardOverlayView) findViewById(R.id.overlay);
-		runThread();
 	}
 
 	@Override
@@ -131,70 +129,6 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 		Log.i(OpenGlStuff.TAG, "onCardboardTrigger");
 		vibrator.vibrate(50);
 		overlayView.show3DToast("Cardboard Trigger not available");
-	}
-
-	// ///////////N E T W O R K /////////////S O C K E T ////////////C O D E Z Z
-	public void runThread() {
-		Thread tr = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					s = new Socket("172.18.3.206", 5009);
-					// s=new Socket("172.18.83.64",5009);
-					// s=new Socket("192.168.3.2",5009);
-					in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-					while (true) {
-						while ((line = in.readLine()) != null) {
-							runThread2(MainActivity.this);
-						}
-					}
-				} catch (Exception e) {
-					System.out.println(e);
-				}
-			}
-		});
-		tr.start();
-	}
-
-	private void runThread2(Activity act) {
-		act.runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				vibrator.vibrate(50);
-
-				if (line.equals("7"))
-					openGlStuff.processLeftStick(-0.5f, 0.5f);
-				if (line.equals("8"))
-					openGlStuff.processLeftStick(0, 0.5f);
-				if (line.equals("9"))
-					openGlStuff.processLeftStick(0.5f, 0.5f);
-				if (line.equals("4"))
-					openGlStuff.processLeftStick(-0.5f, 0);
-				if (line.equals("6"))
-					openGlStuff.processLeftStick(0.5f, 0);
-				if (line.equals("1"))
-					openGlStuff.processLeftStick(-0.5f, -0.5f);
-				if (line.equals("2"))
-					openGlStuff.processLeftStick(0, -0.5f);
-				if (line.equals("3"))
-					openGlStuff.processLeftStick(0.5f, -0.5f);
-				if (line.equals("f"))
-					openGlStuff.selectMode(1);
-				if (line.equals("l"))
-					openGlStuff.selectMode(2);
-				if (line.equals("c"))
-					openGlStuff.selectMode(3);
-				if (line.equals("p"))
-					openGlStuff.selectMode(4);
-				if (line.equals("e"))
-					openGlStuff.selectMode(0);
-				if (line.equals("5") && openGlStuff.drawing == false) {
-					openGlStuff.drawing = true;
-				} else {
-					openGlStuff.drawing = false;
-				}
-			}
-		});
 	}
 
 	@Override
