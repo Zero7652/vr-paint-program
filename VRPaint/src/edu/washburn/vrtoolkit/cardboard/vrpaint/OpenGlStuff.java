@@ -163,7 +163,7 @@ public class OpenGlStuff {
     }
 
     public void processRightStick(float x, float y){
-        double limitZ = cubeCoords[2] / Math.sqrt(3);
+        double limitZ = cubeCoords[2] / Math.sqrt(2);
     	if(!currentTool.getTool().processRightStick(x, y)){
 	        if(Math.abs(cubeCoords[0]+ x)<Math.abs(limitZ)){
 	            cubeCoords[0]= cubeCoords[0] + x;
@@ -338,13 +338,21 @@ public class OpenGlStuff {
         Matrix.setLookAtM(camera, 0, lookingZ[0], lookingZ[1], lookingZ[2], centerZ[0], centerZ[1], centerZ[2], 0.0f, 1.0f, 0.0f);
 
         if(l2Pressed){
-            if(((cubeCoords[2]-1)<=80)||((cubeCoords[2]+1)<=0)){
+            if(Math.abs(cubeCoords[2]-1)<=80){
                 cubeCoords[2] = cubeCoords[2] - 1;
             }
         }
         if(r2Pressed){
-        	if(((cubeCoords[2]+1)<=80)||((cubeCoords[2]-1)<=0)){
+        	if((Math.abs(cubeCoords[2]+1)>=1)){
                 cubeCoords[2] = cubeCoords[2] + 1;
+                if(cubeCoords[0]*Math.sqrt(2)>Math.abs(cubeCoords[2]))
+                    cubeCoords[0] -= 1;
+                if(cubeCoords[1]*Math.sqrt(2)>Math.abs(cubeCoords[2]))
+                    cubeCoords[1] -= 1;
+                if(cubeCoords[0]*Math.sqrt(2)<cubeCoords[2])
+                    cubeCoords[0] += 1;
+                if(cubeCoords[1]*Math.sqrt(2)<cubeCoords[2])
+                    cubeCoords[1] += 1;
             }
         }
 
