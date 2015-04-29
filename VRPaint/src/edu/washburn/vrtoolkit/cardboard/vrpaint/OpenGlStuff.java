@@ -361,6 +361,8 @@ public class OpenGlStuff {
 
     public void onNewFrame(HeadTransform headTransform) {
         headTransform.getHeadView(headView, 0);
+        // Build the camera matrix and apply it to the ModelView.
+        Matrix.setLookAtM(camera, 0, lookingZ[0], lookingZ[1], lookingZ[2], centerZ[0], centerZ[1], centerZ[2], 0.0f, 1.0f, 0.0f);
 
         if(l2Pressed){
             if(((cubeCoords[2]-1)<=80)||((cubeCoords[2]+1)<=0)){
@@ -388,12 +390,6 @@ public class OpenGlStuff {
                 }
             }
         }
-
-        float[] uVector = new float[4];
-        headTransform.getUpVector(uVector,0);
-
-        // Build the camera matrix and apply it to the ModelView.
-        Matrix.setLookAtM(camera, 0, lookingZ[0], lookingZ[1], lookingZ[2], centerZ[0], centerZ[1], centerZ[2], 0.0f, 1.0f, 0.0f);
 
         checkGLError("onReadyToDraw");
     }
