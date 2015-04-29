@@ -13,12 +13,12 @@ import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff;
 import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff.GLSelectableObject;
 
 public class LineTool extends ToolGeneric{
-	private boolean wasMoving = true;
-	private GLSelectableObject start = null;
-	private GLSelectableObject end = null;
-	private List<GLSelectableObject> currentList = new ArrayList<GLSelectableObject>();
-	private List<GLSelectableObject> fullList = new ArrayList<GLSelectableObject>();
-	private Iterator<GLSelectableObject> fullListIterator;
+	protected boolean wasMoving = true;
+	protected GLSelectableObject start = null;
+	protected GLSelectableObject end = null;
+	protected List<GLSelectableObject> currentLine = new ArrayList<GLSelectableObject>();
+	protected List<GLSelectableObject> fullList = new ArrayList<GLSelectableObject>();
+	protected Iterator<GLSelectableObject> fullListIterator;
 	@Override
     public boolean processButtonA(boolean pressed){
     	moving = pressed;
@@ -28,22 +28,22 @@ public class LineTool extends ToolGeneric{
 	public void onNewFrame(HeadTransform headTransform){
 		fullListIterator = fullList.iterator();
 		if(wasMoving && !moving){
-			fullList.removeAll(currentList);
-			world.cubes.addAll(currentList);
+			fullList.removeAll(currentLine);
+			world.cubes.addAll(currentLine);
 			start = getNewObject(0, 0, 0);
 			end = getNewObject(0, 0, 0);
-			currentList.clear();
+			currentLine.clear();
 			wasMoving = false;
 		}
 		if(!wasMoving && !moving){
-        	currentList.clear();
-        	currentList.add(start);
+        	currentLine.clear();
+        	currentLine.add(start);
 			world.placeObjectInfrontOfCamera(start);
 		}
         if(moving) {
-        	currentList.clear();
-        	currentList.add(start);
-        	currentList.add(end);
+        	currentLine.clear();
+        	currentLine.add(start);
+        	currentLine.add(end);
 			world.placeObjectInfrontOfCamera(end);
             createLine(start, end);
             wasMoving = true;
@@ -53,7 +53,7 @@ public class LineTool extends ToolGeneric{
 	@Override
 	public void onDrawEye(Eye eye){
         float[] perspective = eye.getPerspective(OpenGlStuff.Z_NEAR, OpenGlStuff.Z_FAR);
-		for(GLSelectableObject cube : currentList){
+		for(GLSelectableObject cube : currentLine){
 			// Build the ModelView and ModelViewProjection matrices
 			// for calculating cube position and light.
 			Matrix.multiplyMM(world.modelView, 0, world.view, 0, cube.getModel(), 0);
@@ -75,7 +75,7 @@ public class LineTool extends ToolGeneric{
         float mZ = (cube1.getModel()[14] + cube2.getModel()[14])/2;
 
         GLSelectableObject currentMid = getNewObject(-mX,-mY,-mZ);
-        currentList.add(currentMid);
+        currentLine.add(currentMid);
         createLine(cube1,currentMid);
         createLine(cube2,currentMid);
         return;
@@ -85,11 +85,11 @@ public class LineTool extends ToolGeneric{
 		this.world = world;
 	}
 	
-	private GLSelectableObject getNewObject(float[] pos){
+	protected GLSelectableObject getNewObject(float[] pos){
 		return getNewObject(pos[0], pos[1], pos[2]);
 	}
 	
-	private GLSelectableObject getNewObject(float x, float y, float z){
+	protected GLSelectableObject getNewObject(float x, float y, float z){
 		if(fullListIterator.hasNext()){
 			GLSelectableObject cube = fullListIterator.next();
 			cube.getModel()[12] = x;

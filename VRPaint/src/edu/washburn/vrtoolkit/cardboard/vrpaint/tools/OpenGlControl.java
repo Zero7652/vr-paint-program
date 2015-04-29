@@ -9,7 +9,7 @@ public class OpenGlControl {
 		FREE_DRAWING("Free Drawing Mode", new FreeDrawTool()),
 		LINE("Line Drawing Mode", new LineTool()),
 		CIRCLE("Circle Drawing Mode", new CircleTool()),
-		POLYGON("Polygon Drawing Mode", new ToolGeneric()),
+		POLYGON("Polygon Drawing Mode", new PolygonTool()),
 		SAVE("Save Drawing Mode", new SaveTool());
 
 		private final String toolText;
