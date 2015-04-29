@@ -427,7 +427,7 @@ public class OpenGlStuff {
     public GLSelectableObject isLookingAtObject() {
         for (GLSelectableObject cube : cubes) {
             if (isLookingAtObject(cube)) {
-                return cube;
+                return null;
             }
         }
         return null;
@@ -447,9 +447,11 @@ public class OpenGlStuff {
         // onNewFrame.
         Matrix.multiplyMM(modelView, 0, headView, 0, cube.getModel(), 0);
         Matrix.multiplyMV(objPositionVec, 0, modelView, 0, initVec, 0);
-
         float pitch = (float) Math.atan2(objPositionVec[1], -objPositionVec[2]);
         float yaw = (float) Math.atan2(objPositionVec[0], -objPositionVec[2]);
+
+        /*float pitch = (float) Math.atan2(cubeCoords[1], -cubeCoords[2]);
+        float yaw = (float) Math.atan2(cubeCoords[0], -cubeCoords[2]);*/
 
         return Math.abs(pitch) < PITCH_LIMIT && Math.abs(yaw) < YAW_LIMIT;
     }
@@ -663,7 +665,8 @@ public class OpenGlStuff {
 
             // Set the normal positions of the cube, again for shading
             GLES20.glVertexAttribPointer(normalParam, 3, GLES20.GL_FLOAT, false, 0, normals);
-            GLES20.glVertexAttribPointer(colorParam, 4, GLES20.GL_FLOAT, false, 0, isLookingAtObject(this) ? cubeFoundColors : colors);
+            GLES20.glVertexAttribPointer(colorParam, 4, GLES20.GL_FLOAT, false, 0, isLookingAtObject(this) ? colors : colors);
+            //GLES20.glVertexAttribPointer(colorParam, 4, GLES20.GL_FLOAT, false, 0, isLookingAtObject(this) ? cubeFoundColors : colors);
 
             GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
             checkGLError("Drawing cube");

@@ -41,7 +41,6 @@ public class PolygonTool extends ToolGeneric {
 	@Override
 	public void onNewFrame(HeadTransform headTransform){
 		if(!initialized){
-			Log.i("logzzz","im initializing");
 			initialized = true;
 			first = world.new GLSelectableObject(world.cubeCoords);
 			first.onSurfaceCreated(world.vertexShader, world.passthroughShader, world.passthroughShader);
@@ -54,7 +53,6 @@ public class PolygonTool extends ToolGeneric {
 		}
 		
 		if(!starting){
-			Log.i("logzzz","im starting");
         	currentList.clear();
         	//currentList.add(start);
 			world.placeObjectInfrontOfCamera(start);
@@ -63,7 +61,6 @@ public class PolygonTool extends ToolGeneric {
 		
 		if(moving)
 		{
-			Log.i("logzzz","im moving");
 			starting = true;
 			currentList.clear();
         	currentList.add(start);
@@ -76,7 +73,6 @@ public class PolygonTool extends ToolGeneric {
 		}
 		
 		if(wasMoving && !moving){
-			Log.i("logzzz","im done moving");
 			fullList.removeAll(currentList);
 			world.cubes.addAll(currentList);
 			currentList.clear();
@@ -89,7 +85,6 @@ public class PolygonTool extends ToolGeneric {
 		
 		if(stanleyIsAwesome && !bPushed)
 		{
-			Log.i("logzzz","im finishing the polygon");
 			bPushed = true;
 			currentList.clear();
 			currentList.add(first);
