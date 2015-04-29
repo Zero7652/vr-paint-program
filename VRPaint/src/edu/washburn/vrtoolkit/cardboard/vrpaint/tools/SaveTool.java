@@ -129,15 +129,11 @@ public class SaveTool extends ToolGeneric {
 			String[] temp = new String[16];
 			int i = 0;
 			float[] tempFloat = new float[16];
-			Log.i("test", "test-1");
 			FileInputStream input = world.getMain().getApplicationContext().openFileInput(file.getName());
-			Log.i("test", "test0");
 	        InputStreamReader isr = new InputStreamReader(input);
 	        BufferedReader bufferedReader = new BufferedReader(isr);
-            Log.i("test", "test1");
             while ((temp[i] = bufferedReader.readLine()) != null ) {
             	tempFloat[i] = Float.parseFloat(temp[i]);
-                Log.i("test", "test2");
             	if(i == 15)
                 {
             		GLSelectableObject tempCube = world.new GLSelectableObject(0, 0, 0);
@@ -153,7 +149,6 @@ public class SaveTool extends ToolGeneric {
             		i++;
             	}
             }
-            Log.i("test", "test3");
             bufferedReader.close();
             isr.close();
             input.close();
