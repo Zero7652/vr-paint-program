@@ -22,7 +22,7 @@ public class OpenGlStuff {
     public static final String TAG = "MainActivity";
 
     public static final float Z_NEAR = 0.1f;
-    public static final float Z_FAR = 100.0f;
+    public static final float Z_FAR = 500.0f;
     private static final float CAMERA_Z = 0.01f;
     private static final float YAW_LIMIT = 0.05f;
     private static final float PITCH_LIMIT = 0.05f;
@@ -42,6 +42,9 @@ public class OpenGlStuff {
     public boolean l2Pressed= false;
     public boolean r2Pressed = false;
     public Tools currentTool = Tools.NOT_DRAWING;
+    private float x = 0;
+    private float y = 0;
+    private float z = 0;
 
     private GLObject floor = new GLObject(0f, 20f, 0f);
     public List<GLSelectableObject> cubes = new ArrayList<GLSelectableObject>();
@@ -76,6 +79,7 @@ public class OpenGlStuff {
     public OpenGlStuff(MainActivity main) {
         this.main = main;
         currentTool.getTool().register(this);
+        
     }
 
     public void processButtonStart(boolean pressed){
@@ -158,7 +162,8 @@ public class OpenGlStuff {
 
     public void processLeftStick(float x, float y){
     	if(!currentTool.getTool().processLeftStick(x, y)){
-        	moveUser(x,0,y);
+    		this.x = x;
+    		this.z = y;
     	}
     }
 
@@ -182,7 +187,14 @@ public class OpenGlStuff {
 
     public void processTriggers(float l, float r){
     	if(!currentTool.getTool().processTriggers(l, r)){
-    		
+    		if(r > .5)
+    			r2Pressed = true;
+    		else
+    			r2Pressed = false;
+    		if(l > .5)
+    			l2Pressed = true;
+    		else
+    			l2Pressed = false;
     	}
     }
     
@@ -337,6 +349,8 @@ public class OpenGlStuff {
         headTransform.getHeadView(headView, 0);
         Matrix.setLookAtM(camera, 0, lookingZ[0], lookingZ[1], lookingZ[2], centerZ[0], centerZ[1], centerZ[2], 0.0f, 1.0f, 0.0f);
 
+        moveUser(x, 0, z);
+        
         if(l2Pressed){
             if(Math.abs(cubeCoords[2]-1)<=80){
                 cubeCoords[2] = cubeCoords[2] - 1;

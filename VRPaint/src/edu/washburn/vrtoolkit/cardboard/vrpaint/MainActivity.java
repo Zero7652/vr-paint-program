@@ -201,7 +201,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent event) {
 		boolean handled = false;
-		if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+//		if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
 			handled = true;
 			if (event.getRepeatCount() == 0) {
 				if(event.getAction() == KeyEvent.ACTION_DOWN)
@@ -224,6 +224,10 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 					openGlStuff.processButtonB(event.getAction() == KeyEvent.ACTION_DOWN);
 					break;
 				case KeyEvent.KEYCODE_BACK:
+					if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) != InputDevice.SOURCE_GAMEPAD){
+						handled = false;
+						break;
+					}
 				case KeyEvent.KEYCODE_BUTTON_SELECT:
 				case 196: // -> Select <- B U T T O N
 					openGlStuff.processButtonSelect(event.getAction() == KeyEvent.ACTION_DOWN);
@@ -261,7 +265,7 @@ public class MainActivity extends CardboardActivity implements CardboardView.Ste
 					break;
 				}
 			}
-		}
+//		}
 		return handled ? true : super.dispatchKeyEvent(event);
 	}
 
