@@ -5,12 +5,11 @@ import java.util.Iterator;
 import java.util.List;
 
 import android.opengl.Matrix;
-import android.util.Log;
 
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 
-import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff.GLSelectableObject;
+import edu.washburn.vrtoolkit.cardboard.vrpaint.GLSelectableObject;
 
 public class PolygonTool extends ToolGeneric {
 	private boolean initialized = false;
@@ -39,16 +38,16 @@ public class PolygonTool extends ToolGeneric {
     }
 	
 	@Override
-	public void onNewFrame(HeadTransform headTransform){
+	public void onNewFrame(HeadTransform headTransform, float[] headView){
 		if(!initialized){
 			initialized = true;
-			first = world.new GLSelectableObject(world.cubeCoords);
+			first = new GLSelectableObject(world.cubeCoords);
 			first.onSurfaceCreated(world.vertexShader, world.passthroughShader, world.passthroughShader);
 			world.placeObjectInfrontOfCamera(first);
-			start = world.new GLSelectableObject(world.cubeCoords);
+			start = new GLSelectableObject(world.cubeCoords);
 	        start.onSurfaceCreated(world.vertexShader, world.passthroughShader, world.passthroughShader);
 			world.placeObjectInfrontOfCamera(start);
-			end = world.new GLSelectableObject(world.cubeCoords);
+			end = new GLSelectableObject(world.cubeCoords);
 	        end.onSurfaceCreated(world.vertexShader, world.passthroughShader, world.passthroughShader);
 		}
 		
@@ -77,7 +76,7 @@ public class PolygonTool extends ToolGeneric {
 			world.cubes.addAll(currentList);
 			currentList.clear();
         	start = end;
-        	end = world.new GLSelectableObject(world.cubeCoords);
+        	end = new GLSelectableObject(world.cubeCoords);
 	        end.onSurfaceCreated(world.vertexShader, world.passthroughShader, world.passthroughShader);
         	wasMoving = false;
         }
@@ -104,14 +103,14 @@ public class PolygonTool extends ToolGeneric {
 	}
 	
 	@Override
-	public void onDrawEye(Eye eye){
+	public void onDrawEye(Eye eye, float[] view, float[] lightPosInEyeSpace, float[] modelView, float[] headView, float[] modelViewProjection){
         float[] perspective = eye.getPerspective(world.Z_NEAR, world.Z_FAR);
 		for(GLSelectableObject cube : currentList){
 			// Build the ModelView and ModelViewProjection matrices
 			// for calculating cube position and light.
-			Matrix.multiplyMM(world.modelView, 0, world.view, 0, cube.getModel(), 0);
-			Matrix.multiplyMM(world.modelViewProjection, 0, perspective, 0, world.modelView, 0);
-			cube.drawCube();
+			Matrix.multiplyMM(modelView, 0, view, 0, cube.getModel(), 0);
+			Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+			cube.drawCube(lightPosInEyeSpace, modelView, headView, modelViewProjection);
 		}
 	}
 	
@@ -142,7 +141,7 @@ public class PolygonTool extends ToolGeneric {
 			cube.getModel()[14] = z;
 			return cube;
 		}
-		GLSelectableObject cube = world.new GLSelectableObject(x,y,z);
+		GLSelectableObject cube = new GLSelectableObject(x,y,z);
         cube.onSurfaceCreated(world.vertexShader, world.passthroughShader, world.passthroughShader);
         return cube;
 	}

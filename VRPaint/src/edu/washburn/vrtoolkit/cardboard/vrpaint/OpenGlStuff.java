@@ -24,9 +24,9 @@ public class OpenGlStuff {
     public static final float Z_NEAR = 0.1f;
     public static final float Z_FAR = 500.0f;
     private static final float CAMERA_Z = 0.01f;
-    private static final float YAW_LIMIT = 0.05f;
-    private static final float PITCH_LIMIT = 0.05f;
-    private static final int COORDS_PER_VERTEX = 3;
+    static final float YAW_LIMIT = 0.05f;
+    static final float PITCH_LIMIT = 0.05f;
+    static final int COORDS_PER_VERTEX = 3;
     private static final double GRAVITY = 0.25;
     
     // light position just above the user.
@@ -53,10 +53,10 @@ public class OpenGlStuff {
     private final float[] lightPosInEyeSpace = new float[4];
     public float[] cubeCoords = {0f,0f,-20f};
     public float[] camera = new float[16];
-    public float[] view = new float[16];
-    public float[] headView = new float[16];
-    public float[] modelViewProjection = new float[16];
-    public float[] modelView = new float[16];
+    private float[] view = new float[16];
+    private float[] headView = new float[16];
+    private float[] modelViewProjection = new float[16];
+    private float[] modelView = new float[16];
     private float[] centerZ = {0,0,0};
     private float[] lookingZ = {Eyes[0],Eyes[1],CAMERA_Z};
 
@@ -370,7 +370,7 @@ public class OpenGlStuff {
             }
         }
 
-        currentTool.getTool().onNewFrame(headTransform);
+        currentTool.getTool().onNewFrame(headTransform, null);
 
         if(isFalling){
             for(GLSelectableObject cube : cubes){
@@ -422,14 +422,16 @@ public class OpenGlStuff {
             // for calculating cube position and light.
             Matrix.multiplyMM(modelView, 0, view, 0, cube.getModel(), 0);
             Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-            cube.drawCube();
+            cube.drawCube(lightPosInEyeSpace, modelView, headView, modelViewProjection);
         }
 
         // Set modelView for the floor, so we draw floor in the correct location
         Matrix.multiplyMM(modelView, 0, view, 0, floor.getModel(), 0);
         Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
-        floor.drawFloor();
-        currentTool.getTool().onDrawEye(eye);
+        floor.drawFloor(lightPosInEyeSpace, modelView, modelViewProjection);
+        checkGLError("drawing floor");
+        
+        currentTool.getTool().onDrawEye(eye, view, lightPosInEyeSpace, modelView, headView, modelViewProjection);
     }
 
     /**
@@ -468,223 +470,6 @@ public class OpenGlStuff {
         float yaw = (float) Math.atan2(cubeCoords[0], -cubeCoords[2]);*/
 
         return Math.abs(pitch) < PITCH_LIMIT && Math.abs(yaw) < YAW_LIMIT;
-    }
-
-    public class GLObject {
-        protected FloatBuffer vertices;
-        protected FloatBuffer colors;
-        protected FloatBuffer normals;
-
-        protected int program;
-        protected int positionParam;
-        protected int normalParam;
-        protected int colorParam;
-        protected int modelParam;
-        protected int modelViewParam;
-        protected int modelViewProjectionParam;
-        protected int lightPosParam;
-
-        protected float[] model = new float[16];
-        protected float xPos = 0f;
-        protected float yPos = 0f;
-        protected float zPos = 0f;
-
-        public GLObject(float xPos, float yPos, float zPos) {
-            this.xPos = xPos;
-            this.yPos = yPos;
-            this.zPos = zPos;
-        }
-        public GLObject(float[] pos) {
-            this(pos[0], pos[1], pos[2]);
-        }
-
-        protected void stuff() {
-            // make a floor
-            ByteBuffer bbFloorVertices = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_COORDS.length * 4);
-            bbFloorVertices.order(ByteOrder.nativeOrder());
-            vertices = bbFloorVertices.asFloatBuffer();
-            vertices.put(WorldLayoutData.FLOOR_COORDS);
-            vertices.position(0);
-
-            ByteBuffer bbFloorNormals = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_NORMALS.length * 4);
-            bbFloorNormals.order(ByteOrder.nativeOrder());
-            normals = bbFloorNormals.asFloatBuffer();
-            normals.put(WorldLayoutData.FLOOR_NORMALS);
-            normals.position(0);
-
-            ByteBuffer bbFloorColors = ByteBuffer.allocateDirect(WorldLayoutData.FLOOR_COLORS.length * 4);
-            bbFloorColors.order(ByteOrder.nativeOrder());
-            colors = bbFloorColors.asFloatBuffer();
-            colors.put(WorldLayoutData.FLOOR_COLORS);
-            colors.position(0);
-        }
-
-        /**
-         * Draw the floor.
-         *
-         * <p>
-         * This feeds in data for the floor into the shader. Note that this
-         * doesn't feed in data about position of the light, so if we rewrite
-         * our code to draw the floor first, the lighting might look strange.
-         */
-        public void drawFloor() {
-            GLES20.glUseProgram(program);
-
-            // Set ModelView, MVP, position, normals, and color.
-            GLES20.glUniform3fv(lightPosParam, 1, lightPosInEyeSpace, 0);
-            GLES20.glUniformMatrix4fv(modelParam, 1, false, model, 0);
-            GLES20.glUniformMatrix4fv(modelViewParam, 1, false, modelView, 0);
-            GLES20.glUniformMatrix4fv(modelViewProjectionParam, 1, false, modelViewProjection, 0);
-            GLES20.glVertexAttribPointer(positionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, vertices);
-            GLES20.glVertexAttribPointer(normalParam, 3, GLES20.GL_FLOAT, false, 0, normals);
-            GLES20.glVertexAttribPointer(colorParam, 4, GLES20.GL_FLOAT, false, 0, colors);
-
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
-
-            checkGLError("drawing floor");
-        }
-
-        /**
-         * Creates the buffers we use to store information about the 3D world.
-         *
-         * <p>
-         * OpenGL doesn't use Java arrays, but rather needs data in a format it
-         * can understand. Hence we use ByteBuffers.
-         *
-         * @param //config
-         *            The EGL configuration used when creating the surface.
-         */
-        public void onSurfaceCreated(int vertexShader, int gridShader, int passthroughShader) {
-        	stuff();
-            program = GLES20.glCreateProgram();
-            GLES20.glAttachShader(program, vertexShader);
-            if (this instanceof GLSelectableObject) {
-                GLES20.glAttachShader(program, passthroughShader);
-            } else {
-                GLES20.glAttachShader(program, gridShader);
-            }
-            GLES20.glLinkProgram(program);
-            GLES20.glUseProgram(program);
-
-            checkGLError("Floor program");
-
-            modelParam = GLES20.glGetUniformLocation(program, "u_Model");
-            modelViewParam = GLES20.glGetUniformLocation(program, "u_MVMatrix");
-            modelViewProjectionParam = GLES20.glGetUniformLocation(program, "u_MVP");
-            lightPosParam = GLES20.glGetUniformLocation(program, "u_LightPos");
-
-            positionParam = GLES20.glGetAttribLocation(program, "a_Position");
-            normalParam = GLES20.glGetAttribLocation(program, "a_Normal");
-            colorParam = GLES20.glGetAttribLocation(program, "a_Color");
-
-            GLES20.glEnableVertexAttribArray(positionParam);
-            GLES20.glEnableVertexAttribArray(normalParam);
-            GLES20.glEnableVertexAttribArray(colorParam);
-
-            checkGLError("Floor program params");
-            Matrix.setIdentityM(model, 0);
-            Matrix.translateM(model, 0, -xPos, -yPos, -zPos); // Floor appears
-            // below user.
-
-        }
-
-        public float[] getModel() {
-            return model;
-        }
-
-        public void setModel(float[] modelFloor) {
-            for (int k = 0; k > modelFloor.length; k++)
-                model[k] = modelFloor[k];
-        }
-
-        public float getDistance() {
-            return zPos;
-        }
-
-        public void setDistance(float distance) {
-            this.zPos = distance;
-        }
-		public int getProgram() {
-			return program;
-		}
-		public void setProgram(int program) {
-			this.program = program;
-		}
-    }
-
-    public class GLSelectableObject extends GLObject {
-
-        private FloatBuffer cubeFoundColors;
-
-        public double velocity = 0;
-
-        public GLSelectableObject(float xPos, float yPos, float zPos) {
-            super(xPos, yPos, zPos);
-        }
-        
-        public GLSelectableObject(float[] pos) {
-            super(pos);
-        }
-
-        @Override
-        protected void stuff() {
-            ByteBuffer bbVertices = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_COORDS.length * 4);
-            bbVertices.order(ByteOrder.nativeOrder());
-            vertices = bbVertices.asFloatBuffer();
-            vertices.put(WorldLayoutData.CUBE_COORDS);
-            vertices.position(0);
-
-            ByteBuffer bbColors = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_COLORS.length * 4);
-            bbColors.order(ByteOrder.nativeOrder());
-            colors = bbColors.asFloatBuffer();
-            colors.put(WorldLayoutData.CUBE_COLORS);
-            colors.position(0);
-
-            ByteBuffer bbFoundColors = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_FOUND_COLORS.length * 4);
-            bbFoundColors.order(ByteOrder.nativeOrder());
-            cubeFoundColors = bbFoundColors.asFloatBuffer();
-            cubeFoundColors.put(WorldLayoutData.CUBE_FOUND_COLORS);
-            cubeFoundColors.position(0);
-
-            ByteBuffer bbNormals = ByteBuffer.allocateDirect(WorldLayoutData.CUBE_NORMALS.length * 4);
-            bbNormals.order(ByteOrder.nativeOrder());
-            normals = bbNormals.asFloatBuffer();
-            normals.put(WorldLayoutData.CUBE_NORMALS);
-            normals.position(0);
-        }
-
-        /**
-         * Draw the cube.
-         *
-         * <p>
-         * We've set all of our transformation matrices. Now we simply pass them
-         * into the shader.
-         */
-        public void drawCube() {
-            GLES20.glUseProgram(program);
-
-            GLES20.glUniform3fv(lightPosParam, 1, lightPosInEyeSpace, 0);
-
-            // Set the Model in the shader, used to calculate lighting
-            GLES20.glUniformMatrix4fv(modelParam, 1, false, model, 0);
-
-            // Set the ModelView in the shader, used to calculate lighting
-            GLES20.glUniformMatrix4fv(modelViewParam, 1, false, modelView, 0);
-
-            // Set the position of the cube
-            GLES20.glVertexAttribPointer(positionParam, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, vertices);
-
-            // Set the ModelViewProjection matrix in the shader.
-            GLES20.glUniformMatrix4fv(modelViewProjectionParam, 1, false, modelViewProjection, 0);
-
-            // Set the normal positions of the cube, again for shading
-            GLES20.glVertexAttribPointer(normalParam, 3, GLES20.GL_FLOAT, false, 0, normals);
-            GLES20.glVertexAttribPointer(colorParam, 4, GLES20.GL_FLOAT, false, 0, isLookingAtObject(this) ? colors : colors);
-            //GLES20.glVertexAttribPointer(colorParam, 4, GLES20.GL_FLOAT, false, 0, isLookingAtObject(this) ? cubeFoundColors : colors);
-
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
-            checkGLError("Drawing cube");
-        }
     }
 
 	public MainActivity getMain() {

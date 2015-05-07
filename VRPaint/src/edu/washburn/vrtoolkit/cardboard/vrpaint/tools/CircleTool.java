@@ -10,8 +10,8 @@ import android.util.Log;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 
+import edu.washburn.vrtoolkit.cardboard.vrpaint.GLSelectableObject;
 import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff;
-import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff.GLSelectableObject;
 
 public class CircleTool extends ToolGeneric{
 	private boolean wasMoving = true;
@@ -28,13 +28,13 @@ public class CircleTool extends ToolGeneric{
 		return true;
     }
 	@Override
-	public void onNewFrame(HeadTransform headTransform){
+	public void onNewFrame(HeadTransform headTransform, float[] headView){
 		fullListIterator = fullList.iterator();
 		if(wasMoving && !moving){
 			fullList.removeAll(currentList);
 			world.cubes.addAll(currentList);
 			currentList.clear();
-			hView = world.headView;
+			hView = headView;
 			start = getNewObject(0, 0, 0);
 			end = getNewObject(0, 0, 0);
 			wasMoving = false;
@@ -55,14 +55,14 @@ public class CircleTool extends ToolGeneric{
 	}
 
 	@Override
-	public void onDrawEye(Eye eye){
+	public void onDrawEye(Eye eye, float[] view, float[] lightPosInEyeSpace, float[] modelView, float[] headView, float[] modelViewProjection){
         float[] perspective = eye.getPerspective(OpenGlStuff.Z_NEAR, OpenGlStuff.Z_FAR);
 		for(GLSelectableObject cube : currentList){
 			// Build the ModelView and ModelViewProjection matrices
 			// for calculating cube position and light.
-			Matrix.multiplyMM(world.modelView, 0, world.view, 0, cube.getModel(), 0);
-			Matrix.multiplyMM(world.modelViewProjection, 0, perspective, 0, world.modelView, 0);
-			cube.drawCube();
+			Matrix.multiplyMM(modelView, 0, view, 0, cube.getModel(), 0);
+			Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+			cube.drawCube(lightPosInEyeSpace, modelView, headView, modelViewProjection);
 		}
 	}
 
@@ -189,7 +189,7 @@ public class CircleTool extends ToolGeneric{
 			cube.getModel()[14] = z;
 			return cube;
 		}
-		GLSelectableObject cube = world.new GLSelectableObject(x,y,z);
+		GLSelectableObject cube = new GLSelectableObject(x,y,z);
         cube.onSurfaceCreated(world.vertexShader, world.passthroughShader, world.passthroughShader);
         return cube;
 	}

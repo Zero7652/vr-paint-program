@@ -5,8 +5,8 @@ import android.opengl.Matrix;
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 
+import edu.washburn.vrtoolkit.cardboard.vrpaint.GLSelectableObject;
 import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff;
-import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff.GLSelectableObject;
 
 public class FreeDrawTool extends ToolGeneric{
 	GLSelectableObject current = null;
@@ -16,9 +16,9 @@ public class FreeDrawTool extends ToolGeneric{
 		return true;
     }
 	
-	public void onNewFrame(HeadTransform headTransform){
+	public void onNewFrame(HeadTransform headTransform, float[] headView){
 		if(current == null){
-			current = world.new GLSelectableObject(0, 0, 0);
+			current = new GLSelectableObject(0, 0, 0);
 			current.onSurfaceCreated(world.vertexShader, world.gridShader, world.passthroughShader);
 		}
 		world.placeObjectInfrontOfCamera(current);
@@ -33,13 +33,13 @@ public class FreeDrawTool extends ToolGeneric{
 	    	}
 	    	if(cubeDistance < 1) return;
 	    	world.cubes.add(current);
-			current = world.new GLSelectableObject(0, 0, 0);
+			current = new GLSelectableObject(0, 0, 0);
 			current.onSurfaceCreated(world.vertexShader, world.gridShader, world.passthroughShader);
 			world.placeObjectInfrontOfCamera(current);
 		}
 	}
 	
-	public void onDrawEye(Eye eye){
+	public void onDrawEye(Eye eye, float[] view, float[] lightPosInEyeSpace, float[] modelView, float[] headView, float[] modelViewProjection){
 		
     	double cubeDistance = 9;
     	if(!world.cubes.isEmpty()){
@@ -53,9 +53,9 @@ public class FreeDrawTool extends ToolGeneric{
     	if(current != null){
 
             float[] perspective = eye.getPerspective(OpenGlStuff.Z_NEAR, OpenGlStuff.Z_FAR);
-			Matrix.multiplyMM(world.modelView, 0, world.view, 0, current.getModel(), 0);
-			Matrix.multiplyMM(world.modelViewProjection, 0, perspective, 0, world.modelView, 0);
-    		current.drawCube();
+			Matrix.multiplyMM(modelView, 0, view, 0, current.getModel(), 0);
+			Matrix.multiplyMM(modelViewProjection, 0, perspective, 0, modelView, 0);
+    		current.drawCube(lightPosInEyeSpace, modelView, headView, modelViewProjection);;
     	}
 	}
 }

@@ -91,11 +91,11 @@ public class ToolGeneric {
 		return false;
     }
 	
-	public void onDrawEye(Eye eye){
+	public void onDrawEye(Eye eye, float[] view, float[] lightPosInEyeSpace, float[] modelView, float[] headView, float[] modelViewProjection){
 		
 	}
 	
-	public void onNewFrame(HeadTransform headTransform){
+	public void onNewFrame(HeadTransform headTransform, float[] headView){
 	}
 	
 	public void register(OpenGlStuff world) {

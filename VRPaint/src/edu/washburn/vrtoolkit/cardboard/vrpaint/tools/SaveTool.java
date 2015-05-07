@@ -11,11 +11,10 @@ import java.io.OutputStreamWriter;
 
 import android.content.Context;
 import android.opengl.GLES20;
-import android.util.Log;
 
 import com.google.vrtoolkit.cardboard.HeadTransform;
 
-import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff.GLSelectableObject;
+import edu.washburn.vrtoolkit.cardboard.vrpaint.GLSelectableObject;
 
 
 public class SaveTool extends ToolGeneric {
@@ -104,7 +103,7 @@ public class SaveTool extends ToolGeneric {
 		}
 	}
 	@Override
-	public void onNewFrame(HeadTransform headTransform){
+	public void onNewFrame(HeadTransform headTransform, float[] headView){
 		if(clear){
 			for(GLSelectableObject cube : world.cubes){
 				GLES20.glDeleteProgram(cube.getProgram());
@@ -136,7 +135,7 @@ public class SaveTool extends ToolGeneric {
             	tempFloat[i] = Float.parseFloat(temp[i]);
             	if(i == 15)
                 {
-            		GLSelectableObject tempCube = world.new GLSelectableObject(0, 0, 0);
+            		GLSelectableObject tempCube = new GLSelectableObject(0, 0, 0);
                 	tempCube.onSurfaceCreated(world.vertexShader, world.passthroughShader, world.passthroughShader);
             		for(int k=0;k<16;k++)
                 	{
