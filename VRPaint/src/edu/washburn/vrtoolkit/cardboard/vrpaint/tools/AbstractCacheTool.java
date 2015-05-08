@@ -7,8 +7,8 @@ import java.util.List;
 import edu.washburn.vrtoolkit.cardboard.vrpaint.GLSelectableObject;
 
 public abstract class AbstractCacheTool extends ToolGeneric{
-	private static List<GLSelectableObject> fullList = new ArrayList<GLSelectableObject>();
-	private static Iterator<GLSelectableObject> fullListIterator;
+	private List<GLSelectableObject> fullList = new ArrayList<GLSelectableObject>();
+	private Iterator<GLSelectableObject> fullListIterator;
 
 	public void onNewFrameAbstractCacheTool(){
 		fullListIterator = fullList.iterator();

@@ -3,11 +3,12 @@ package edu.washburn.vrtoolkit.cardboard.vrpaint;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 
-public class GLObject {
+public class GLObject{
     protected FloatBuffer vertices;
     protected FloatBuffer colors;
     protected FloatBuffer normals;
@@ -145,5 +146,76 @@ public class GLObject {
 	}
 	public void setProgram(int program) {
 		this.program = program;
+	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + colorParam;
+		result = prime * result + ((colors == null) ? 0 : colors.hashCode());
+		result = prime * result + lightPosParam;
+		result = prime * result + Arrays.hashCode(model);
+		result = prime * result + modelParam;
+		result = prime * result + modelViewParam;
+		result = prime * result + modelViewProjectionParam;
+		result = prime * result + normalParam;
+		result = prime * result + ((normals == null) ? 0 : normals.hashCode());
+		result = prime * result + positionParam;
+		result = prime * result + program;
+		result = prime * result + ((vertices == null) ? 0 : vertices.hashCode());
+		result = prime * result + Float.floatToIntBits(xPos);
+		result = prime * result + Float.floatToIntBits(yPos);
+		result = prime * result + Float.floatToIntBits(zPos);
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		GLObject other = (GLObject) obj;
+		if (colorParam != other.colorParam)
+			return false;
+		if (colors == null) {
+			if (other.colors != null)
+				return false;
+		} else if (!colors.equals(other.colors))
+			return false;
+		if (lightPosParam != other.lightPosParam)
+			return false;
+		if (!Arrays.equals(model, other.model))
+			return false;
+		if (modelParam != other.modelParam)
+			return false;
+		if (modelViewParam != other.modelViewParam)
+			return false;
+		if (modelViewProjectionParam != other.modelViewProjectionParam)
+			return false;
+		if (normalParam != other.normalParam)
+			return false;
+		if (normals == null) {
+			if (other.normals != null)
+				return false;
+		} else if (!normals.equals(other.normals))
+			return false;
+		if (positionParam != other.positionParam)
+			return false;
+		if (program != other.program)
+			return false;
+		if (vertices == null) {
+			if (other.vertices != null)
+				return false;
+		} else if (!vertices.equals(other.vertices))
+			return false;
+		if (Float.floatToIntBits(xPos) != Float.floatToIntBits(other.xPos))
+			return false;
+		if (Float.floatToIntBits(yPos) != Float.floatToIntBits(other.yPos))
+			return false;
+		if (Float.floatToIntBits(zPos) != Float.floatToIntBits(other.zPos))
+			return false;
+		return true;
 	}
 }

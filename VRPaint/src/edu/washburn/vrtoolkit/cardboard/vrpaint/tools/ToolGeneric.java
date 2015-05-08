@@ -1,7 +1,7 @@
 package edu.washburn.vrtoolkit.cardboard.vrpaint.tools;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
@@ -14,7 +14,7 @@ public class ToolGeneric {
 	boolean moving = false;
 	float[] pos = {0, 0, 0};
 	float scale = 1;
-	protected List<GLSelectableObject> readyLine = new ArrayList<GLSelectableObject>();
+	protected Set<GLSelectableObject> readyLine = new HashSet<GLSelectableObject>();
 	public ToolGeneric(){};
 	public ToolGeneric(boolean moving){
 		this.moving = moving;
@@ -103,12 +103,12 @@ public class ToolGeneric {
 	public void onNewFrame(HeadTransform headTransform){
 	}
 	
-	public List<GLSelectableObject> getObjectsThatAreReady(){
+	public Set<GLSelectableObject> getObjectsThatAreReady(){
 		if(readyLine.isEmpty()){
 			return readyLine;
 		} else {
-			List<GLSelectableObject> emptyList = readyLine;
-			readyLine = new ArrayList<GLSelectableObject>();
+			Set<GLSelectableObject> emptyList = readyLine;
+			readyLine = new HashSet<GLSelectableObject>();
 			return emptyList;	
 		}
 	}
