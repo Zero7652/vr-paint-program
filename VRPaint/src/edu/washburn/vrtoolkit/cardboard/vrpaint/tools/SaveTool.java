@@ -108,11 +108,16 @@ public class SaveTool extends ToolGeneric {
 			}
 		}
 		if(clear){
-			for(GLSelectableObject cube : world.cubes){
-				GLES20.glDeleteProgram(cube.getProgram());
+//			for(GLSelectableObject cube : world.cubes){
+//				GLES20.glDeleteProgram(cube.getProgram());
+//			}
+//			world.cubes.clear();
+			if(!world.cubes.isEmpty()){
+				GLES20.glDeleteProgram(world.cubes.get(0).getProgram());
+				world.cubes.remove(0);
 			}
-			world.cubes.clear();
-			clear = false;
+			if(world.cubes.isEmpty())
+				clear = false;
 		}
         if(moving) {
         	loadCubes();

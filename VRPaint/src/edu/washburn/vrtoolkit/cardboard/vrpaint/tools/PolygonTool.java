@@ -21,7 +21,8 @@ public class PolygonTool extends LineTool {
 	
 	@Override
     public boolean processButtonA(boolean pressed){
-		phase++;
+		if(pressed)
+			phase++;
 		return true;
     }
 	
@@ -86,16 +87,17 @@ public class PolygonTool extends LineTool {
             }
 		}
 		if(phase == END_PHASE){
-        	currentLine.clear();
-        	currentLine.add(start);
-            createLine(start, first);
-            removeFromCache(currentLine);
-            currentLineList.add(currentLine);
-            
+			if(currentLineList.size()>1){
+	        	currentLine.clear();
+	        	currentLine.add(start);
+	            createLine(start, first);
+	            removeFromCache(currentLine);
+	            currentLineList.add(currentLine);
+			}
         	for(List<GLSelectableObject> currentLine : currentLineList)
         		readyLine.addAll(currentLine);
 			currentLineList.clear();
-			currentLine.clear();;
+			currentLine.clear();
 			phase = 1;
 			start = null;
 			first = null;
