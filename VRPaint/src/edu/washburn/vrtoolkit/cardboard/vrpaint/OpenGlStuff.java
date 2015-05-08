@@ -4,19 +4,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.microedition.khronos.egl.EGLConfig;
+
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.util.Log;
+
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 import com.google.vrtoolkit.cardboard.samples.treasurehunt.R;
-import edu.washburn.vrtoolkit.cardboard.vrpaint.tools.OpenGlControl.Tools;
+
+import edu.washburn.vrtoolkit.cardboard.vrpaint.tools.Tools;
 
 public class OpenGlStuff {
     public static final String TAG = "MainActivity";
@@ -370,7 +371,8 @@ public class OpenGlStuff {
             }
         }
 
-        currentTool.getTool().onNewFrame(headTransform, null);
+        currentTool.getTool().onNewFrame(headTransform);
+        cubes.addAll(currentTool.getTool().getObjectsThatAreReady());
 
         if(isFalling){
             for(GLSelectableObject cube : cubes){

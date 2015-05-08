@@ -1,8 +1,12 @@
 package edu.washburn.vrtoolkit.cardboard.vrpaint.tools;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.vrtoolkit.cardboard.Eye;
 import com.google.vrtoolkit.cardboard.HeadTransform;
 
+import edu.washburn.vrtoolkit.cardboard.vrpaint.GLSelectableObject;
 import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff;
 
 public class ToolGeneric {
@@ -10,6 +14,7 @@ public class ToolGeneric {
 	boolean moving = false;
 	float[] pos = {0, 0, 0};
 	float scale = 1;
+	protected List<GLSelectableObject> readyLine = new ArrayList<GLSelectableObject>();
 	public ToolGeneric(){};
 	public ToolGeneric(boolean moving){
 		this.moving = moving;
@@ -95,7 +100,17 @@ public class ToolGeneric {
 		
 	}
 	
-	public void onNewFrame(HeadTransform headTransform, float[] headView){
+	public void onNewFrame(HeadTransform headTransform){
+	}
+	
+	public List<GLSelectableObject> getObjectsThatAreReady(){
+		if(readyLine.isEmpty()){
+			return readyLine;
+		} else {
+			List<GLSelectableObject> emptyList = readyLine;
+			readyLine = new ArrayList<GLSelectableObject>();
+			return emptyList;	
+		}
 	}
 	
 	public void register(OpenGlStuff world) {

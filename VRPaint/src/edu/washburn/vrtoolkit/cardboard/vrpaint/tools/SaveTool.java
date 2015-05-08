@@ -20,6 +20,7 @@ import edu.washburn.vrtoolkit.cardboard.vrpaint.GLSelectableObject;
 public class SaveTool extends ToolGeneric {
 	private boolean clear = false;
 	private SaveFile file = SaveFile.SAVE01;
+	private boolean aPressed;
 	@Override
     public boolean processDpad(float x, float y){
 		if(x<-.5){
@@ -35,27 +36,8 @@ public class SaveTool extends ToolGeneric {
 	@Override
     public boolean processButtonA(boolean pressed){
 		if(pressed){
-			try{
-				FileOutputStream output = world.getMain().getApplicationContext().openFileOutput(file.getName(), Context.MODE_PRIVATE);
-				OutputStreamWriter osw = new OutputStreamWriter(output);
-				BufferedWriter writer = new BufferedWriter(osw);
-				for(int i = 0;i<world.cubes.size();i++)
-				{
-					for(int k = 0;k<16;k++)
-					{
-						writer.write(Float.toString(world.cubes.get(i).getModel()[k]));
-						writer.newLine();
-					}
-				}
-				writer.close();
-				osw.close();
-				output.close();
-				world.getMain().getOverlayView().show3DToast("Finished saving file: " + file.getName());
-			}
-			catch(IOException ioe)
-			{
-				ioe.printStackTrace();
-			}
+			aPressed = true;
+			world.getMain().getOverlayView().show3DToast("Finished saving file: " + file.getName());
 		}
 		return true;
     }
@@ -63,7 +45,7 @@ public class SaveTool extends ToolGeneric {
 	@Override
     public boolean processButtonB(boolean pressed){
 		if(pressed){
-			this.moving = true;
+			moving = true;
 			world.getMain().getOverlayView().show3DToast("Finished loading file: " + file.getName());
 		}
 		return true;
@@ -103,7 +85,28 @@ public class SaveTool extends ToolGeneric {
 		}
 	}
 	@Override
-	public void onNewFrame(HeadTransform headTransform, float[] headView){
+	public void onNewFrame(HeadTransform headTransform){
+		if(aPressed){
+			aPressed = false;
+			try{
+				FileOutputStream output = world.getMain().getApplicationContext().openFileOutput(file.getName(), Context.MODE_PRIVATE);
+				OutputStreamWriter osw = new OutputStreamWriter(output);
+				BufferedWriter writer = new BufferedWriter(osw);
+				for(GLSelectableObject cube : world.cubes){
+					for(float currentFloat : cube.getModel()){
+						writer.write(Float.toString(currentFloat));
+						writer.newLine();
+					}
+				}
+				writer.close();
+				osw.close();
+				output.close();
+			}
+			catch(IOException ioe)
+			{
+				ioe.printStackTrace();
+			}
+		}
 		if(clear){
 			for(GLSelectableObject cube : world.cubes){
 				GLES20.glDeleteProgram(cube.getProgram());

@@ -22,8 +22,8 @@ public class StarburstTool extends LineTool {
 		return true;
     }
 	@Override
-	public void onNewFrame(HeadTransform headTransform, float[] headView){
-		fullListIterator = fullList.iterator();
+	public void onNewFrame(HeadTransform headTransform){
+		onNewFrameAbstractCacheTool();
 		if(phase == 0){
 			phase++;
 		}
@@ -40,22 +40,25 @@ public class StarburstTool extends LineTool {
         	world.placeObjectInfrontOfCamera(start);
 		}
 		if(phase == 3 && moving){
-			fullList.removeAll(currentLine);
+			removeFromCache(currentLine);
 			currentLineList.add(currentLine);
 			currentLine = new ArrayList<GLSelectableObject>();
 			moving = false;
 		}
         if(phase == 3) {
         	currentLine.clear();
-        	currentLine.add(end);
 			world.placeObjectInfrontOfCamera(end);
             createLine(start, end);
+            currentLine.add(end);
             wasMoving = true;
         }
         if(phase == END_PHASE){
-        	world.cubes.add(start);
+			removeFromCache(currentLine);
+			currentLineList.add(currentLine);
+			currentLine = new ArrayList<GLSelectableObject>();
+        	readyLine.add(start);
         	for(List<GLSelectableObject> currentLine : currentLineList)
-        		world.cubes.addAll(currentLine);
+        		readyLine.addAll(currentLine);
 			currentLineList.clear();
 			phase = 1;
         }

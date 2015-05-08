@@ -1,7 +1,6 @@
 package edu.washburn.vrtoolkit.cardboard.vrpaint.tools;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import android.opengl.Matrix;
@@ -13,14 +12,12 @@ import com.google.vrtoolkit.cardboard.HeadTransform;
 import edu.washburn.vrtoolkit.cardboard.vrpaint.GLSelectableObject;
 import edu.washburn.vrtoolkit.cardboard.vrpaint.OpenGlStuff;
 
-public class CircleTool extends ToolGeneric{
-	private boolean wasMoving = true;
+public class CircleTool extends AbstractCacheTool{
+	private boolean wasMoving = false;
 	private GLSelectableObject start = null;
 	private GLSelectableObject end = null;
 	private List<GLSelectableObject> currentList = new ArrayList<GLSelectableObject>();
-	private List<GLSelectableObject> fullList = new ArrayList<GLSelectableObject>();
-	private Iterator<GLSelectableObject> fullListIterator;
-    public float[] hView = null;
+    public float[] hView = new float[16];
     
 	@Override
     public boolean processButtonA(boolean pressed){
@@ -28,23 +25,33 @@ public class CircleTool extends ToolGeneric{
 		return true;
     }
 	@Override
-	public void onNewFrame(HeadTransform headTransform, float[] headView){
-		fullListIterator = fullList.iterator();
-		if(wasMoving && !moving){
-			fullList.removeAll(currentList);
-			world.cubes.addAll(currentList);
-			currentList.clear();
-			hView = headView;
+	public void onNewFrame(HeadTransform headTransform){
+		onNewFrameAbstractCacheTool();
+		if(start == null){
 			start = getNewObject(0, 0, 0);
-			end = getNewObject(0, 0, 0);
+		}
+		if(wasMoving && !moving){
+			removeFromCache(currentList);
+			readyLine.addAll(currentList);
+			if(currentList.contains(end)){
+				end = null;
+			}
+			if(currentList.contains(start)){
+				start = getNewObject(0, 0, 0);
+			}
+			currentList.clear();
 			wasMoving = false;
 		}
 		if(!wasMoving && !moving){
+			headTransform.getHeadView(hView, 0);
         	currentList.clear();
         	currentList.add(start);
 			world.placeObjectInfrontOfCamera(start);
 		}
         if(moving) {
+        	if(end == null){
+        		end = getNewObject(0, 0, 0);
+        	}
         	currentList.clear();
         	currentList.add(start);
         	currentList.add(end);
@@ -81,9 +88,9 @@ public class CircleTool extends ToolGeneric{
         	currentList.remove(end);
         	return;
         }
-        currentList.remove(cube1);
+        currentList.remove(start);
 
-        float[] cCoord3 = {0,(float)cubeDistance,0};
+        float[] cCoord3 = {0,cubeDistance,0};
         float[] resultVector = new float[3];
         float[] resultVector2 = new float[3];
         world.mvMult(resultVector, h, cCoord3);
@@ -177,21 +184,4 @@ public class CircleTool extends ToolGeneric{
         createArc2(mid,cube2,start,o,hVZ, radiusZ);
     }
 	
-	private GLSelectableObject getNewObject(float[] pos){
-		return getNewObject(pos[0], pos[1], pos[2]);
-	}
-	
-	private GLSelectableObject getNewObject(float x, float y, float z){
-		if(fullListIterator.hasNext()){
-			GLSelectableObject cube = fullListIterator.next();
-			cube.getModel()[12] = x;
-			cube.getModel()[13] = y;
-			cube.getModel()[14] = z;
-			return cube;
-		}
-		GLSelectableObject cube = new GLSelectableObject(x,y,z);
-        cube.onSurfaceCreated(world.vertexShader, world.passthroughShader, world.passthroughShader);
-        return cube;
-	}
-
 }
